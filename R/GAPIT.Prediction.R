@@ -19,8 +19,8 @@ m.sample=round(m/num)
 
 if(num<2||num>m){stop("Validation Invalid. Please select folders num >1 !")}
 
-vali<-matrix(nr=m.sample,nc=num-1)
-cali<-matrix(nr=m-m.sample,nc=num-1)
+vali<-matrix(nrow=m.sample,nolc=num-1)
+cali<-matrix(nrow=m-m.sample,ncol=num-1)
 
 #vali<-list(v1=unique(as.character(sample(y$Taxa, m.sample))))
 #cali<-list(c1=y[!(y$Taxa %in% as.matrix(as.data.frame(vali[1]))), 'Taxa'])

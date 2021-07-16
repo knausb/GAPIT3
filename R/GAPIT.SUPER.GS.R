@@ -14,8 +14,8 @@ function(Y,GD=NULL,GM=NULL,KI=NULL,Z=NULL,CV=NULL,GK=NULL,kinship.algorithm=NULL
 print("--------------------- Welcome to GAPIT SUPER GS----------------------------")
 Timmer=GAPIT.Timmer(Infor="GAPIT.SUPER.GS")
 Memory=GAPIT.Memory(Infor="GAPIT.SUPER.GS")
-  if(!require(EMMREML)) install.packages("EMMREML")
-  library(EMMREML)
+#  if(!require(EMMREML)) install.packages("EMMREML")
+#  library(EMMREML)
 
 shortcut=FALSE
 LL.save=1e10

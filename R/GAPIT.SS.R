@@ -185,7 +185,7 @@ if(buspred)
    # print(cor(busCV[,-1]))
    busGAPIT=GAPIT(
      Y=ic_Y,
-     K=busKI,
+     KI=busKI,
      CV=busCV,
      model="gBLUP",
      file.output=F)

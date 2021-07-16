@@ -587,7 +587,7 @@ if(!is.null(GLD) &file.output)
     if(!inherits(MyHeatmap, "try-error")) 
       {
   #Modify the plot
-      library(grid)
+#      library(grid)
       # LDheatmap.highlight(MyHeatmap, i = sigsnp, j=sigsnp+1, col = "red")
       grid.edit(gPath("myLDgrob","heatMap","heatmap"),gp=gpar(col="white",lwd=8))
       grid.edit(gPath("myLDgrob", "Key", "title"), gp=gpar(cex=.5, col="blue"))  #edit key title size and color

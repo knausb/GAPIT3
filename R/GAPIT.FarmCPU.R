@@ -264,7 +264,7 @@ function(Y=NULL,GDP=NULL,GM=NULL,CV=NULL,orientation="row",package="FarmCPU.LM",
         #cbind(lmcoefOnly[,1],lmcoefOnly[,3],lmcoefOnly[,2],lmcoefOnly[,4])
         #})
         
-        P<-matrix(NA,nr=nrow(GDP),nc=4*(nf+1))
+        P<-matrix(NA,nrow=nrow(GDP),ncol=4*(nf+1))
         for(i in 1:nrow(GDP)){
             x <- GDP[i,]
             fmla <- formula(myModel)
@@ -1256,9 +1256,10 @@ converge=1,iteration.output=FALSE,acceleration=0,model="A",MAF.calculate=FALSE,p
             #print(date())
             
             if(theLoop<=2){
-                myBin=FarmCPU.BIN(Y=Y1[,c(1,trait)],GD=GD1,GM=GM,CV=CV1,orientation=orientation,P=myPrior,method=method.bin,b=bin.size,s=bin.selection,theLoop=theLoop,bound=bound)
+                # GD=GD1 be GDP=GD1
+                myBin=FarmCPU.BIN(Y=Y1[,c(1,trait)],GDP=GD1,GM=GM,CV=CV1,orientation=orientation,P=myPrior,method=method.bin,b=bin.size,s=bin.selection,theLoop=theLoop,bound=bound)
             }else{
-                myBin=FarmCPU.BIN(Y=Y1[,c(1,trait)],GD=GD1,GM=GM,CV=theCV,orientation=orientation,P=myPrior,method=method.bin,b=bin.size,s=bin.selection,theLoop=theLoop)
+                myBin=FarmCPU.BIN(Y=Y1[,c(1,trait)],GDP=GD1,GM=GM,CV=theCV,orientation=orientation,P=myPrior,method=method.bin,b=bin.size,s=bin.selection,theLoop=theLoop)
             }
             
             #Step 2c: Remove bin dependency
@@ -1377,7 +1378,7 @@ converge=1,iteration.output=FALSE,acceleration=0,model="A",MAF.calculate=FALSE,p
                 }
             }
             
-            myRemove=FarmCPU.Remove(GD=GD1,GM=GM,seqQTN=seqQTN,seqQTN.p=seqQTN.p,orientation=orientation,threshold=.7)
+            myRemove=FarmCPU.Remove(GDP=GD1,GM=GM,seqQTN=seqQTN,seqQTN.p=seqQTN.p,orientation=orientation,threshold=.7)
             
             #Recoding QTNs history
             seqQTN=myRemove$seqQTN

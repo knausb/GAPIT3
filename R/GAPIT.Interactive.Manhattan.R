@@ -75,10 +75,10 @@ if(c("m")%in%plot.type)
   z[z<10]=paste("0",z[z<10],sep="")
   zz=paste("Chr_",z,sep="")
   #print(zz)
-  if(!require(plotly)) install.packages("plotly")
-  #print("!!!!!")
-  #print(head(Position))
-  library(plotly)
+  # if(!require(plotly)) install.packages("plotly")
+  # #print("!!!!!")
+  # #print(head(Position))
+  # library(plotly)
   p <- plot_ly(
     type = 'scatter',
     x = ~Position,

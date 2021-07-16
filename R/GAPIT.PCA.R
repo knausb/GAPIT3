@@ -43,8 +43,9 @@ dev.off()
 if(PCA.3d==TRUE)
 {   
   if(1>2)
-  {if(!require(lattice)) install.packages("lattice")
-   library(lattice)
+  {
+   # if(!require(lattice)) install.packages("lattice")
+   # library(lattice)
    pca=as.data.frame(PCA.X$x)
    
    png(file="example%03d.png", width=500, heigh=500)
@@ -59,9 +60,9 @@ if(PCA.3d==TRUE)
     file.remove(list.files(pattern=".png"))
     }
 
-    if(!require(rgl)) install.packages("rgl")
-    if(!require(rglwidget)) install.packages("rglwidget")
-    library(rgl)
+    # if(!require(rgl)) install.packages("rgl")
+    # if(!require(rglwidget)) install.packages("rglwidget")
+    # library(rgl)
     
     PCA1 <- PCA.X$x[,1]
     PCA2 <- PCA.X$x[,2]
@@ -109,8 +110,8 @@ if(PCA.3d==TRUE)
     if (interactive()) widgets
     htmltools::save_html(widgets, "Interactive.PCA.html")
 }
-    if(!require(scatterplot3d)) install.packages("scatterplot3d")
-    library(scatterplot3d)
+    # if(!require(scatterplot3d)) install.packages("scatterplot3d")
+    # library(scatterplot3d)
 
     pdf("GAPIT.PCA.3D.pdf", width = 7, height = 7)
     par(mar = c(5,5,5,5))

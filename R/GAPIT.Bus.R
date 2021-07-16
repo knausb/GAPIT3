@@ -117,10 +117,10 @@ GWAS=cbind(GM,mySUPERFaST$ps,mySUPERFaST$stats,mySUPERFaST$dfs,mySUPERFaST$effec
 
 if(method=="FarmCPU")
 {
-  if(!require(bigmemory)) install.packages("bigmemory")
-  if(!require(biganalytics)) install.packages("biganalytics")
-library(bigmemory)  #for FARM-CPU
-library(biganalytics) #for FARM-CPU
+#   if(!require(bigmemory)) install.packages("bigmemory")
+#   if(!require(biganalytics)) install.packages("biganalytics")
+# library(bigmemory)  #for FARM-CPU
+# library(biganalytics) #for FARM-CPU
 #if(!exists('FarmCPU', mode='function'))source("http://www.zzlab.net/FarmCPU/FarmCPU_functions.txt")#web source code
 
 colnames(GM)[1]="SNP"
@@ -378,10 +378,10 @@ if(method=="Blink")
   # if(!require(devtools))  install.packages("devtools")
   #if(!require(BLINK)) devtools::install_github("YaoZhou89/BLINK", host = "api.github.com")
   # if(!require(BLINK)) devtools::install_github("jiabowang/BLINK")
-  if(!require(bigmemory)) install.packages("bigmemory")
-  if(!require(biganalytics)) install.packages("biganalytics")
-library(bigmemory)  #for FARM-CPU
-library(biganalytics) #for FARM-CPU
+#   if(!require(bigmemory)) install.packages("bigmemory")
+#   if(!require(biganalytics)) install.packages("biganalytics")
+# library(bigmemory)  #for FARM-CPU
+# library(biganalytics) #for FARM-CPU
   #source("http://zzlab.net/GAPIT/gapit_functions.txt")
   #source("http://zzlab.net/FarmCPU/FarmCPU_functions.txt")
   colnames(GD)[-1]=as.character(GM[,1])

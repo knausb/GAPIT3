@@ -101,8 +101,8 @@ if(!setequal(no_model,character(0)))
 Observed=pred_all$observed[pred_all$refinf==1]
 Predicted=pred_all$gBLUP[pred_all$refinf==1]
 
-if(!require(plotly)) install.packages("plotly")
-  library(plotly)
+# if(!require(plotly)) install.packages("plotly")
+#   library(plotly)
 
   # p <- plot_ly(
   #   type = 'scatter',

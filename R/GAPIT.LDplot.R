@@ -61,7 +61,7 @@
     
     
   #Modify the plot
-      library(grid)
+#      library(grid)
       grid.edit(gPath("myLDgrob", "geneMap","SNPnames"), gp = gpar(cex=0.35,col="blue")) #Edit SNP name
       
       if(!is.null(marker))
