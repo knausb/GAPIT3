@@ -319,7 +319,8 @@
           GDpred = deepcopy(GD,rows=seqQTN)
         }
       }
-      PEV = Blink.Pred(Y = YP,GD = GDpred, CV = CV,orientation = orientation)
+      PEV = Blink.Pred(Y = YP,GD = GDpred, CV = CV)
+      # unused argument: ,orientation = orientation)
     }
     if(time.cal){
       print("LD.time(sec):")
@@ -425,7 +426,7 @@
     }
   }else{
     print("please choose one method for BIC")
-    break
+    #break
   }
 
   BICv=rep(NA,length(position))
@@ -893,7 +894,7 @@ function(GM=NULL,GLM=NULL,QTN=NULL,method="mean",useapply=TRUE,model="A"){
     w=GDP[,-i]
     if(nsnp==1) w=NULL
     GD=as.matrix(GDP[,i])
-    rsnp[i,1]=Blink.cor(Y=Y,w=w,GD=GD,orientation=orientation,,ms=ms,n=ny,m=nm)
+    rsnp[i,1]=Blink.cor(Y=Y,w=w,GD=GD,orientation=orientation,ms=ms,n=ny,m=nm)
   }
   rm(GDP, GD, w, ncov, nf)
     return(rsnp)
