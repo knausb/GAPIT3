@@ -107,8 +107,8 @@ if(PCA.3d==TRUE)
       sids4 <- spheres3d(PCA1[index4], PCA2[index4], PCA3[index4], col = PCA.col[index4],radius=1)
       widgets<-rglwidget(width = 900, height = 900) %>%toggleWidget(ids = sids1, label = "Population 1")%>%toggleWidget(ids = sids2, label = "Population 2")%>%toggleWidget(ids = sids3, label = "Population 3")%>%toggleWidget(ids = sids4, label = "Population 4")
     }
-    if (interactive()) widgets
-    htmltools::save_html(widgets, "Interactive.PCA.html")
+#    if (interactive()) widgets
+#    htmltools::save_html(widgets, "Interactive.PCA.html")
 }
     # if(!require(scatterplot3d)) install.packages("scatterplot3d")
     # library(scatterplot3d)
