@@ -1,14 +1,17 @@
 Package: GAPIT3
-Type: Package
 Title: GAPIT（Genomic Association and Prediction Integrated Tool）
-Version: 3.1.0
+Version: 3.1.0.9000
 Authors@R: c(
-          person("Jiabo", "Wang", email = "wangjiaboyifeng@163.com", role = c("aut", "cre"))
+          person(given = "Jiabo",
+                 family = "Wang", 
+                 role = c("aut", "cre"),
+                 email = "wangjiaboyifeng@163.com",
+                 comment = c(ORCID = "YOUR-ORCID-ID")
+                 )
           )
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: What the package does (one paragraph).
 License: GPL (>= 2)
-Depends: R (>= 3.5.0)
-Imports: multtest, gplots,MASS, compiler
 Encoding: UTF-8
 LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
