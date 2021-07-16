@@ -28,7 +28,7 @@ print("--------------------- Welcome to GAPIT ----------------------------")
 echo=TRUE
 all.memo=NULL
 
-GAPIT.Version=GAPIT.0000()
+#GAPIT.Version=GAPIT.0000()
 #if(!is.null(model))if(!match(model,c("MLM","CMLM","SUPER","GLM","FarmCPU","Blink","BlinkC","MLMM","gBLUP","cBLUP","sBLUP"))) stop(paste("PLease choose one model from ","MLM","CMLM","SUPER","GLM","FarmCPU","Blink","gBLUP","cBLUP","sBLUP",sep=""))
 #Allow either KI or K, but not both
 if(model%in%c("gBLUP","cBLUP","sBLUP"))
