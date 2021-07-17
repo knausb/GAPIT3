@@ -7,7 +7,7 @@ function(name.of.trait="Trait"){
 # Last update: may 29, 2011 
 ############################################################################################## 
 # print aggregate memory usage statistics 
-print(paste('R is using', memory.size(), 'MB out of limit', memory.limit(), 'MB')) 
+#print(paste('R is using', memory.size(), 'MB out of limit', memory.limit(), 'MB')) 
   
 # create function to return matrix of memory consumption 
 object.sizes <- function() 

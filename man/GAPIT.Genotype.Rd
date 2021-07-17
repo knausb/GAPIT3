@@ -45,13 +45,13 @@ GAPIT.Genotype(
   inclosure.size = 100,
   sangwich.top = NULL,
   sangwich.bottom = NULL,
-  file.output = TRUE,
+  file.output = FALSE,
   kinship.cluster = "average",
   NJtree.group = NULL,
   NJtree.type = c("fan", "unrooted"),
   Create.indicator = FALSE,
   Major.allele.zero = FALSE,
-  Geno.View.output = TRUE
+  Geno.View.output = FALSE
 )
 }
 \arguments{
@@ -157,6 +157,8 @@ Genotype function
 }
 \details{
 More to come.
+
+Kinship algorithm (Zhang, , )...
 }
 \examples{
 # GAPIT.Genotype()

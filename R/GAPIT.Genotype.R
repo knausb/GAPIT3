@@ -54,6 +54,9 @@
 
 #' @details 
 #' More to come.
+#' 
+#' Kinship algorithm (Zhang, , )...
+#'
 #'
 #' @return a list
 #' @export
@@ -64,23 +67,41 @@
 #' @examples
 #' # GAPIT.Genotype()
 #'
-`GAPIT.Genotype` <- function(G = NULL, GD = NULL, GM = NULL, KI = NULL,
-    kinship.algorithm = "Zhang", SNP.effect = "Add", SNP.impute = "Middle",
-    PCA.total = 0, PCA.col = NULL, PCA.3d = PCA.3d, seed = 123, SNP.fraction = 1,
+`GAPIT.Genotype` <- function(
+    G = NULL, GD = NULL, GM = NULL, 
+    KI = NULL,
+    kinship.algorithm = "Zhang", 
+    SNP.effect = "Add", 
+    SNP.impute = "Middle",
+    PCA.total = 0, PCA.col = NULL, PCA.3d = PCA.3d, 
+    seed = 123, 
+    SNP.fraction = 1,
     file.path=NULL,file.from=NULL, file.to=NULL, file.total=NULL,
-    file.fragment = 1000,SNP.test = TRUE,
-    file.G = NULL, file.Ext.G = NULL,
-    file.GD=NULL,file.Ext.GD=NULL,
-    file.GM=NULL,file.Ext.GM=NULL,
-    SNP.MAF=0.05,FDR.Rate = 0.05,SNP.FDR=1,
-    Timmer=NULL,Memory=NULL,
-    LD.chromosome=NULL,LD.location=NULL,LD.range=NULL, SNP.CV=NULL,
-    GP = NULL,GK = NULL,GTindex=NULL,
+    file.fragment = 1000,
+    SNP.test = TRUE,
+    file.G = NULL,
+    file.Ext.G = NULL,
+    file.GD = NULL,
+    file.Ext.GD = NULL,
+    file.GM=NULL,
+    file.Ext.GM=NULL,
+    SNP.MAF=0.05,
+    FDR.Rate = 0.05,
+    SNP.FDR=1,
+    Timmer=NULL,
+    Memory=NULL,
+    LD.chromosome=NULL,LD.location=NULL,LD.range=NULL,
+    SNP.CV=NULL,
+    GP = NULL,
+    GK = NULL,
+    GTindex=NULL,
     bin.size = 1000,inclosure.size = 100,
     sangwich.top=NULL,sangwich.bottom=NULL,
     file.output=FALSE,
-    kinship.cluster="average",NJtree.group=NULL,NJtree.type=c("fan","unrooted"),
-    Create.indicator = FALSE, Major.allele.zero = FALSE,Geno.View.output=TRUE){
+    kinship.cluster="average",
+    NJtree.group = NULL, NJtree.type = c("fan","unrooted"),
+    Create.indicator = FALSE, Major.allele.zero = FALSE,
+    Geno.View.output = FALSE){
 
 # Object: To unify genotype and calculate kinship and PC if required:
 #       1.For G data, convert it to GD and GI
@@ -156,42 +177,42 @@
   if(is.null(file.from) &!is.null(file.to) ) stop("GAPIT says: file.from and file.to must be in pair)")
   if(!is.null(file.from) &is.null(file.to) ) stop("GAPIT says: file.from and file.to must be in pair)")
 
-#assign file.total
-if(!is.null(file.from) &!is.null(file.to) ) file.total=file.to-file.from+1
-if(byFile& is.null(file.total)) stop("GAPIT says: file.from and file.to must be provided!)")
+  #assign file.total
+  if(!is.null(file.from) &!is.null(file.to) ) file.total=file.to-file.from+1
+  if(byFile& is.null(file.total)) stop("GAPIT says: file.from and file.to must be provided!)")
 
-if(!is.null(GP) & !is.null(GK) ) stop("GAPIT Says: You can not provide GP and GK at same time")
-if(!is.null(GP) & !is.null(KI) ) stop("GAPIT Says: You can not provide GP and KI at same time")
-if(!is.null(GK) & !is.null(KI))   stop("GAPIT says: You can not specify GK and KI at same time!!!")
+  if(!is.null(GP) & !is.null(GK) ) stop("GAPIT Says: You can not provide GP and GK at same time")
+  if(!is.null(GP) & !is.null(KI) ) stop("GAPIT Says: You can not provide GP and KI at same time")
+  if(!is.null(GK) & !is.null(KI))   stop("GAPIT says: You can not specify GK and KI at same time!!!")
 
-#GP does not allow TOP
-if(!is.null(GP) & !is.null(sangwich.top) ) stop("GAPIT Says: You provided GP. You can not spycify sangwich.top")
+  #GP does not allow TOP
+  if(!is.null(GP) & !is.null(sangwich.top) ) stop("GAPIT Says: You provided GP. You can not spycify sangwich.top")
 
-#Top require a bottom
-if(!is.null(sangwich.top) & is.null(sangwich.bottom) ) stop("GAPIT Says: Top require its Bottom")
+  #Top require a bottom
+  if(!is.null(sangwich.top) & is.null(sangwich.bottom) ) stop("GAPIT Says: Top require its Bottom")
 
-#naked bottom require GP or GK
-if(is.null(sangwich.top) & !is.null(sangwich.bottom) & (is.null(GP) & is.null(GK)) ) stop("GAPIT Says: Uncovered Bottom (without TOP) requires GP or GK")
+  #naked bottom require GP or GK
+  if(is.null(sangwich.top) & !is.null(sangwich.bottom) & (is.null(GP) & is.null(GK)) ) stop("GAPIT Says: Uncovered Bottom (without TOP) requires GP or GK")
 
-#Pseudo top (GK or GP) requires a bottom
-if(is.null(sangwich.top) & is.null(sangwich.bottom) & (!is.null(GP)|!is.null(GK  ))) stop("GAPIT Says: You have provide GP or GK, you need to provide Bottom")
+  #Pseudo top (GK or GP) requires a bottom
+  if(is.null(sangwich.top) & is.null(sangwich.bottom) & (!is.null(GP)|!is.null(GK  ))) stop("GAPIT Says: You have provide GP or GK, you need to provide Bottom")
 
-#if(!is.null(KI) &!is.null(kinship.algorithm))  stop("GAPIT says: You can not specify kinship.algorithm and provide kinship at same time!!!")
+  #if(!is.null(KI) &!is.null(kinship.algorithm))  stop("GAPIT says: You can not specify kinship.algorithm and provide kinship at same time!!!")
 
 
 
-if(!needKinPC &SNP.fraction<1)  stop("GAPIT says: You did not require calculate kinship or PCs. SNP.fraction should not be specified!!!")
-if(!SNP.test & is.null(KI) & !byData & !byFile)  stop("GAPIT says: For SNP.test optioin, please input either use KI or use genotype")
+  if(!needKinPC &SNP.fraction<1)  stop("GAPIT says: You did not require calculate kinship or PCs. SNP.fraction should not be specified!!!")
+  if(!SNP.test & is.null(KI) & !byData & !byFile)  stop("GAPIT says: For SNP.test optioin, please input either use KI or use genotype")
 
-#if(is.null(file.path) & !byData & byFile) stop("GAPIT Ssays: A path for genotype data should be provided!")
-if(is.null(file.total) & !byData & byFile) stop("GAPIT Ssays: Number of file should be provided: >=1")
-if(!is.null(G) & !is.null(GD)) stop("GAPIT Ssays: Both hapmap and EMMA format exist, choose one only.")
+  #if(is.null(file.path) & !byData & byFile) stop("GAPIT Ssays: A path for genotype data should be provided!")
+  if(is.null(file.total) & !byData & byFile) stop("GAPIT Ssays: Number of file should be provided: >=1")
+  if(!is.null(G) & !is.null(GD)) stop("GAPIT Ssays: Both hapmap and EMMA format exist, choose one only.")
 
-if(!is.null(file.GD) & is.null(file.GM) & (!is.null(GP)|!is.null(GK)) ) stop("GAPIT Ssays: Genotype data and map files should be in pair")
-if(is.null(file.GD) & !is.null(file.GM) & (!is.null(GP)|!is.null(GK)) ) stop("GAPIT Ssays: Genotype data and map files should be in pair")
+  if(!is.null(file.GD) & is.null(file.GM) & (!is.null(GP)|!is.null(GK)) ) stop("GAPIT Ssays: Genotype data and map files should be in pair")
+  if(is.null(file.GD) & !is.null(file.GM) & (!is.null(GP)|!is.null(GK)) ) stop("GAPIT Ssays: Genotype data and map files should be in pair")
 
-if(!is.null(GD) & is.null(GM) & (is.null(GP)&is.null(GK)) &kinship.algorithm!="SUPER") stop("GAPIT Says: Genotype data and map files should be in pair")
-if(is.null(GD) & !is.null(GM) & (is.null(GP)&is.null(GK)) &kinship.algorithm!="SUPER") stop("GAPIT Says: Genotype data and map files should be in pair")
+  if(!is.null(GD) & is.null(GM) & (is.null(GP)&is.null(GK)) &kinship.algorithm!="SUPER") stop("GAPIT Says: Genotype data and map files should be in pair")
+  if(is.null(GD) & !is.null(GM) & (is.null(GP)&is.null(GK)) &kinship.algorithm!="SUPER") stop("GAPIT Says: Genotype data and map files should be in pair")
 
 
 #if(!byData & !byFile) stop("APIT Ssays: Either genotype data or files should be given!")
@@ -201,24 +222,24 @@ if(is.null(GD) & !is.null(GM) & (is.null(GP)&is.null(GK)) &kinship.algorithm!="S
 Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="Genotype loaded")
 Memory=GAPIT.Memory(Memory=Memory,Infor="Genotype loaded")
   
-#Inital GLD
-GLD=NULL
-SNP.QTN=NULL #Intitial
-GT=NULL
+  #Inital GLD
+  GLD=NULL
+  SNP.QTN=NULL #Intitial
+  GT=NULL
 
-#Handler of read data in numeric format (EMMA)
-#Rename GM as GI
-if(!is.null(GM))GI=GM
-rm(GM)
-gc()
-#Extract GD and GT from read data GD
-if(!is.null(GD) )
-  {
-  GT=as.matrix(GD[,1])  #get taxa
-  GD=as.matrix(GD[,-1]) #remove taxa column
-  Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="GT created from GD)")
-  Memory=GAPIT.Memory(Memory=Memory,Infor="GT created from GD")
-  }
+  #Handler of read data in numeric format (EMMA)
+  #Rename GM as GI
+  if(!is.null(GM))GI=GM
+  rm(GM)
+  gc()
+  #Extract GD and GT from read data GD
+  if(!is.null(GD) )
+    {
+    GT=as.matrix(GD[,1])  #get taxa
+    GD=as.matrix(GD[,-1]) #remove taxa column
+    Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="GT created from GD)")
+    Memory=GAPIT.Memory(Memory=Memory,Infor="GT created from GD")
+    }
 
 #Hapmap format
 if(!is.null(G))

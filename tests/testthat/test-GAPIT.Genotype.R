@@ -6,6 +6,8 @@ test_that("multiplication works", {
 
 test_that("GAPIT.Genotype() works", {
   
+  debug(GAPIT.Genotype)
+  
   myGenoFile <- system.file("extdata", "mdp_genotype_test.hmp.txt.gz",
                             package = "GAPIT3")
   myGenotypes  <- read.table(myGenoFile, header = FALSE)

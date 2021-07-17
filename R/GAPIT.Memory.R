@@ -6,7 +6,8 @@ function(Memory =NULL,Infor){
 # Last update: June 6, 2011 
 ##############################################################################################
 gc()
-size <- memory.size()
+#size <- memory.size()
+size <- Inf
 #print(paste("Memory usage: ",size," for", Infor))
 if(is.null(Memory)) {
 Increased=0
