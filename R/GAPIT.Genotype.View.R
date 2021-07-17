@@ -6,7 +6,7 @@
 # w1_end:Moving Average windows End Position
 # mav1:Moving Average set value length
 # Authors: You Tang and Zhiwu Zhang
-# Last update: March 11, 2016 
+# Last update: March 11, 2016
 ##############################################################################################
 
 #if(nrow(myGI)<1000) return() #Markers are not enough for this analysis
@@ -32,11 +32,11 @@ if(is.null(chr)){chr=1}
   het.snp=apply(H,2,mean)
   ylab.ind=paste("Frequency (out of ",length(het.ind)," individuals)",sep="")
   ylab.snp=paste("Frequency (out of ",length(het.snp)," markers)",sep="")
-  pdf("GAPIT.Heterozygosity.pdf", width =10, height = 6)
-  par(mfrow=c(1,2),mar=c(5,5,1,1)+0.1)
-  hist(het.ind,col="gray", main="",ylab=ylab.ind, xlab="Heterozygosity of individuals")
-  hist(het.snp,col="gray", main="",ylab=ylab.snp, xlab="Heterozygosity of markers")
-  dev.off()
+#  pdf("GAPIT.Heterozygosity.pdf", width =10, height = 6)
+#  par(mfrow=c(1,2),mar=c(5,5,1,1)+0.1)
+#  hist(het.ind,col="gray", main="",ylab=ylab.ind, xlab="Heterozygosity of individuals")
+#  hist(het.snp,col="gray", main="",ylab=ylab.snp, xlab="Heterozygosity of markers")
+#  dev.off()
   rm(X, H, het.ind, het.snp) #Feree memory
   
 myFig21<-myGI
@@ -102,18 +102,18 @@ results2<-cbind(myFig22,kk1)
 max2<-max(myFig22[,4])
 
 
-pdf("GAPIT.Marker.Density.pdf", width =10, height = 6)
-par(mar=c(5,5,4,5)+0.1)
-hist(as.numeric(as.matrix(results[,4])),xlab="Density",main="Distribution of SNP",breaks=12, cex.axis=0.9,col = "dimgray",cex.lab=1.3)###,xlim=c(0,25040359))
+#pdf("GAPIT.Marker.Density.pdf", width =10, height = 6)
+#par(mar=c(5,5,4,5)+0.1)
+#hist(as.numeric(as.matrix(results[,4])),xlab="Density",main="Distribution of SNP",breaks=12, cex.axis=0.9,col = "dimgray",cex.lab=1.3)###,xlim=c(0,25040359))
 
-par(new=T)
-plot(results2[,4],results2[,5]/m,xaxt="n", yaxt="n",bg="lightgray",xlab="",ylab="",type="l",pch=20,col="#990000",cex=1.0,cex.lab=1.3, cex.axis=0.9, lwd=3,las=1,xlim=c(0,max2))
-axis(4,col="#990000",col.ticks="#990000",col.axis="#990000")
-mtext("Accumulation Frequency",side=4,line=3,font=2,font.axis=1.3,col="#990000")
-abline(h=0,col="forestgreen",lty=2)
-abline(h=1,col="forestgreen",lty=2)
+#par(new=T)
+#plot(results2[,4],results2[,5]/m,xaxt="n", yaxt="n",bg="lightgray",xlab="",ylab="",type="l",pch=20,col="#990000",cex=1.0,cex.lab=1.3, cex.axis=0.9, lwd=3,las=1,xlim=c(0,max2))
+#axis(4,col="#990000",col.ticks="#990000",col.axis="#990000")
+#mtext("Accumulation Frequency",side=4,line=3,font=2,font.axis=1.3,col="#990000")
+#abline(h=0,col="forestgreen",lty=2)
+#abline(h=1,col="forestgreen",lty=2)
 
-dev.off()
+#dev.off()
 
 
 
@@ -152,7 +152,7 @@ myFig23<-myFig3[kk3,]
 
 myGD3<-X[,kk3]
 
-##set windows long 
+##set windows long
 ##w1_start<-30
 ##w1_end<-230
 ###get windows numeric snp at the same chr
@@ -223,15 +223,15 @@ result_mav2[g]<-sum/mav1
 }
 result_mav<-cbind(result_mav1,result_mav2)
 
-pdf("GAPIT.Marker.LD.pdf", width =10, height = 6)
-par(mar = c(5,5,5,5))
+#pdf("GAPIT.Marker.LD.pdf", width =10, height = 6)
+#par(mar = c(5,5,5,5))
 
-plot(as.matrix(result3_3[,1]),as.matrix(result3_3[,3]),bg="dimgray",xlab="Distance",ylab="R Square",pch=1,cex=0.9,cex.lab=1.2, lwd=0.75,las=1)
-#,ylim=c(0,round(max(result3_3[,3]))))
+#plot(as.matrix(result3_3[,1]),as.matrix(result3_3[,3]),bg="dimgray",xlab="Distance",ylab="R Square",pch=1,cex=0.9,cex.lab=1.2, lwd=0.75,las=1)
+# #,ylim=c(0,round(max(result3_3[,3]))))
 
- lines(result_mav[,2]~result_mav[,1], lwd=6,type="l",pch=20,col="#990000")
+# lines(result_mav[,2]~result_mav[,1], lwd=6,type="l",pch=20,col="#990000")
 
-dev.off()
+# dev.off()
 
 
 

@@ -58,7 +58,7 @@
 #' @return a list
 #' @export
 #'
-#' @author Zhiwu Zeng, Jiabo Wang
+#' @author Zhiwu Zhang, Jiabo Wang
 #' 
 #'
 #' @examples
@@ -526,8 +526,9 @@ if(is.null(KI) & (!is.null(GD) |!is.null(GK)) & !kinship.algorithm%in%c("FarmCPU
     }
   if(kinship.algorithm=="Loiselle")theKin= GAPIT.kinship.loiselle(snps=t(as.matrix(.5*thisGD)), method="additive", use="all")
   if(kinship.algorithm=="VanRaden")theKin= GAPIT.kinship.VanRaden(snps=as.matrix(thisGD))
-  if(kinship.algorithm=="Zhang")theKin= GAPIT.kinship.Zhang(snps=as.matrix(thisGD))
-  if(kinship.algorithm=="Separation")
+#  if(kinship.algorithm=="Zhang")theKin= GAPIT.kinship.Zhang(snps=as.matrix(thisGD))
+  if(kinship.algorithm=="Zhang")theKin= GAPIT.kinship.ZHANG(snps=as.matrix(thisGD))
+    if(kinship.algorithm=="Separation")
   {
     thePCA=GAPIT.PCA(X = GD, taxa = GT, PC.number = PCA.total,file.output=F,PCA.total=PCA.total,PCA.col=NULL,PCA.3d=F)
     PC=thePCA$PCs[,1:(1+PCA.total)]
