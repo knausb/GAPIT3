@@ -1,21 +1,89 @@
-`GAPIT.Genotype` <-
-function(G=NULL,GD=NULL,GM=NULL,KI=NULL,
-  kinship.algorithm="Zhang",SNP.effect="Add",SNP.impute="Middle",PCA.total=0,PCA.col=NULL,PCA.3d=PCA.3d,seed=123, SNP.fraction =1,
-  file.path=NULL,file.from=NULL, file.to=NULL, file.total=NULL, file.fragment = 1000,SNP.test=TRUE,
-  file.G =NULL,file.Ext.G =NULL,
-  file.GD=NULL,file.Ext.GD=NULL,
-  file.GM=NULL,file.Ext.GM=NULL,
-  SNP.MAF=0.05,FDR.Rate = 0.05,SNP.FDR=1,
-  Timmer=NULL,Memory=NULL,
-  LD.chromosome=NULL,LD.location=NULL,LD.range=NULL, SNP.CV=NULL,
-  GP = NULL,GK = NULL,GTindex=NULL,  
-  bin.size = 1000,inclosure.size = 100,
-  sangwich.top=NULL,sangwich.bottom=NULL,
-  file.output=TRUE,kinship.cluster="average",NJtree.group=NULL,NJtree.type=c("fan","unrooted"),
-  Create.indicator = FALSE, Major.allele.zero = FALSE,Geno.View.output=TRUE){
-#Object: To unify genotype and calculate kinship and PC if required:
+
+#' GAPIT.Genotype
+#'
+#' @description Genotype function
+#' 
+#' @param G matrix of genotypes in HapMap format
+#' @param GD matrix of genotypes in numeric format
+#' @param GM Genotype Map for numeric data
+#' @param KI Kinship matrix
+#' @param kinship.algorithm myDescription 
+#' @param SNP.effect myDescription
+#' @param SNP.impute myDescription
+#' @param PCA.total myDescription
+#' @param PCA.col myDescription
+#' @param PCA.3d myDescription
+#' @param seed myDescription
+#' @param SNP.fraction myDescription
+#' @param file.path myDescription
+#' @param file.from myDescription
+#' @param file.to myDescription
+#' @param file.total myDescription
+#' @param file.fragment myDescription
+#' @param SNP.test myDescription
+#' @param file.G myDescription
+#' @param file.Ext.G myDescription
+#' @param file.GD myDescription
+#' @param file.Ext.GD myDescription
+#' @param file.GM myDescription
+#' @param file.Ext.GM myDescription
+#' @param SNP.MAF myDescription
+#' @param FDR.Rate myDescription
+#' @param SNP.FDR myDescription
+#' @param Timmer myDescription
+#' @param Memory myDescription
+#' @param LD.chromosome myDescription
+#' @param LD.location myDescription
+#' @param LD.range myDescription
+#' @param SNP.CV myDescription
+#' @param GP myDescription
+#' @param GK myDescription
+#' @param GTindex myDescription
+#' @param bin.size myDescription
+#' @param inclosure.size myDescription
+#' @param sangwich.top myDescription
+#' @param sangwich.bottom myDescription
+#' @param file.output myDescription
+#' @param kinship.cluster myDescription
+#' @param NJtree.group myDescription
+#' @param NJtree.type myDescription
+#' @param Create.indicator myDescription
+#' @param Major.allele.zero myDescription
+#' @param Geno.View.output myDescription
+
+
+#' @details 
+#' More to come.
+#'
+#' @return a list
+#' @export
+#'
+#' @author Zhiwu Zeng, Jiabo Wang
+#' 
+#'
+#' @examples
+#' # GAPIT.Genotype()
+#'
+`GAPIT.Genotype` <- function(G = NULL, GD = NULL, GM = NULL, KI = NULL,
+    kinship.algorithm = "Zhang", SNP.effect = "Add", SNP.impute = "Middle",
+    PCA.total = 0, PCA.col = NULL, PCA.3d = PCA.3d, seed = 123, SNP.fraction = 1,
+    file.path=NULL,file.from=NULL, file.to=NULL, file.total=NULL,
+    file.fragment = 1000,SNP.test = TRUE,
+    file.G = NULL, file.Ext.G = NULL,
+    file.GD=NULL,file.Ext.GD=NULL,
+    file.GM=NULL,file.Ext.GM=NULL,
+    SNP.MAF=0.05,FDR.Rate = 0.05,SNP.FDR=1,
+    Timmer=NULL,Memory=NULL,
+    LD.chromosome=NULL,LD.location=NULL,LD.range=NULL, SNP.CV=NULL,
+    GP = NULL,GK = NULL,GTindex=NULL,
+    bin.size = 1000,inclosure.size = 100,
+    sangwich.top=NULL,sangwich.bottom=NULL,
+    file.output=TRUE,kinship.cluster="average",NJtree.group=NULL,NJtree.type=c("fan","unrooted"),
+    Create.indicator = FALSE, Major.allele.zero = FALSE,Geno.View.output=TRUE){
+
+# Object: To unify genotype and calculate kinship and PC if required:
 #       1.For G data, convert it to GD and GI
-#       2.For GD and GM data, nothing change 
+#       2.For GD and GM data, nothing change
 #       3.Samling GD and create KI and PC
 #       4.Go through multiple files
 #       5.In any case, GD must be returned (for QC)
@@ -28,64 +96,64 @@ function(G=NULL,GD=NULL,GM=NULL,KI=NULL,
 
 
 
-Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="Genotype start")
-Memory=GAPIT.Memory(Memory=Memory,Infor="Genotype start")
-compress_z=NULL
-type_col=NULL
-#Create logical variables
-byData=!is.null(G) | !is.null(GD)
-byFile=!is.null(file.G) | !is.null(file.GD)
-hasGenotype=(byData | byFile  )
-needKinPC=(is.null(KI) | PCA.total>0 | kinship.algorithm=="Separation")
+  Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="Genotype start")
+  Memory=GAPIT.Memory(Memory=Memory,Infor="Genotype start")
+  compress_z=NULL
+  type_col=NULL
+  #Create logical variables
+  byData=!is.null(G) | !is.null(GD)
+  byFile=!is.null(file.G) | !is.null(file.GD)
+  hasGenotype=(byData | byFile  )
+  needKinPC=(is.null(KI) | PCA.total>0 | kinship.algorithm=="Separation")
 
-if(!is.null(KI) & !byData & !byFile & !SNP.test &kinship.algorithm!="SUPER") 
-  { 
-  print("It return unexpected")
-  return (list(GD=NULL,GI=NULL,GT=NULL,hasGenotype=FALSE, genoFormat=NULL, KI=KI,PC=NULL,byFile=FALSE,fullGD=TRUE,Timmer=Timmer,Memory=Memory))
-  }
+  if(!is.null(KI) & !byData & !byFile & !SNP.test & kinship.algorithm != "SUPER")
+    {
+    print("It return unexpected")
+    return (list(GD=NULL,GI=NULL,GT=NULL,hasGenotype=FALSE, genoFormat=NULL, KI=KI,PC=NULL,byFile=FALSE,fullGD=TRUE,Timmer=Timmer,Memory=Memory))
+    }
 
 
-#Set indicator for full GD
-fullGD=FALSE
-if(byData) fullGD=TRUE
-if(byFile & SNP.fraction==1 & needKinPC) fullGD=TRUE
+  #Set indicator for full GD
+  fullGD=FALSE
+  if(byData) fullGD=TRUE
+  if(byFile & SNP.fraction == 1 & needKinPC) fullGD=TRUE
 
-#SET GT to NULL in case of no genotype
-if(!byData & !byFile & is.null(GK) &kinship.algorithm!="SUPER") 
+  #SET GT to NULL in case of no genotype
+  if(!byData & !byFile & is.null(GK) &kinship.algorithm!="SUPER")
+    {
+    if(is.null(KI) & is.null(GP) & is.null(GK)) stop("GAPIT says: Kinship has to be provided or estimated from genotype!!!")
+    return (list(GD=NULL,GI=NULL,GT=NULL,hasGenotype=FALSE, genoFormat=NULL, KI=KI,PC=NULL,byFile=FALSE,fullGD=TRUE,Timmer=Timmer,Memory=Memory))
+    }
+
+  genoFormat="hapmap"
+  if(is.null(G) & is.null(file.G)) genoFormat="EMMA"
+
+  #Multiple genotype files
+  #In one of the 3 situations, calculate KI with the algorithm specified, otherwise skip cit by setting algorithm to "SUPER"
+  kinship.algorithm.save=kinship.algorithm
+  kinship.algorithm="SUPER"
+  #Normal
+  if(is.null(sangwich.top) & is.null(sangwich.bottom) ) kinship.algorithm=kinship.algorithm.save
+  #TOP or Bottom is MLM
+  pass.top=FALSE
+  if(!is.null(sangwich.top))   pass.top=!(sangwich.top=="FaST" | sangwich.top=="SUPER" | sangwich.top=="DC")
+  pass.bottom=FALSE
+  if(!is.null(sangwich.bottom))   pass.bottom=!(sangwich.bottom=="FaST" | sangwich.bottom=="SUPER" | sangwich.bottom=="DC")
+  if(pass.top | pass.bottom )kinship.algorithm=kinship.algorithm.save
+  #Compatibility of input
+
+  #agreement among file from, to and total
+  if(!is.null(file.from) &!is.null(file.to) &!is.null(file.total))
+    {
+      if(file.total!=(file.to-file.from+1))  stop("GAPIT says: Conflict among file (from, to and total)")
+    }
+  if(!is.null(file.from) &!is.null(file.to))
   {
-  if(is.null(KI) & is.null(GP) & is.null(GK)) stop("GAPIT says: Kinship has to be provided or estimated from genotype!!!")
-  return (list(GD=NULL,GI=NULL,GT=NULL,hasGenotype=FALSE, genoFormat=NULL, KI=KI,PC=NULL,byFile=FALSE,fullGD=TRUE,Timmer=Timmer,Memory=Memory))
+    if(file.to<file.from)  stop("GAPIT says: file.from should smaller than file.to")
   }
-
-genoFormat="hapmap"
-if(is.null(G)&is.null(file.G)) genoFormat="EMMA"
-
-#Multiple genotype files
-#In one of the 3 situations, calculate KI with the algorithm specified, otherwise skip cit by setting algorithm to "SUPER"
-kinship.algorithm.save=kinship.algorithm
-kinship.algorithm="SUPER"
-#Normal
-if(is.null(sangwich.top) & is.null(sangwich.bottom) ) kinship.algorithm=kinship.algorithm.save
-#TOP or Bottom is MLM
-pass.top=FALSE
-if(!is.null(sangwich.top))   pass.top=!(sangwich.top=="FaST" | sangwich.top=="SUPER" | sangwich.top=="DC")
-pass.bottom=FALSE
-if(!is.null(sangwich.bottom))   pass.bottom=!(sangwich.bottom=="FaST" | sangwich.bottom=="SUPER" | sangwich.bottom=="DC")
-if(pass.top | pass.bottom )kinship.algorithm=kinship.algorithm.save
-#Compatibility of input
-
-#agreement among file from, to and total
-if(!is.null(file.from) &!is.null(file.to) &!is.null(file.total))
-  {
-  if(file.total!=(file.to-file.from+1))  stop("GAPIT says: Conflict among file (from, to and total)")
-  }
-if(!is.null(file.from) &!is.null(file.to)) 
-  {
-  if(file.to<file.from)  stop("GAPIT says: file.from should smaller than file.to")
-  }
-#file.from and file.to must be in pair
-if(is.null(file.from) &!is.null(file.to) ) stop("GAPIT says: file.from and file.to must be in pair)")
-if(!is.null(file.from) &is.null(file.to) ) stop("GAPIT says: file.from and file.to must be in pair)")
+  #file.from and file.to must be in pair
+  if(is.null(file.from) &!is.null(file.to) ) stop("GAPIT says: file.from and file.to must be in pair)")
+  if(!is.null(file.from) &is.null(file.to) ) stop("GAPIT says: file.from and file.to must be in pair)")
 
 #assign file.total
 if(!is.null(file.from) &!is.null(file.to) ) file.total=file.to-file.from+1
@@ -213,7 +281,7 @@ if(!byData & byFile)
     numSNP=file.fragment
     myFRG=NULL
    #print(paste("numSNP  before while is ",numSNP))
-    while(numSNP==file.fragment) 
+    while(numSNP==file.fragment)
          {     #this is problematic if the read end at the last line
          print(paste("Reading file: ",file,"Fragment: ",frag))
          Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="Before Fragment")
@@ -241,7 +309,7 @@ if(!byData & byFile)
              {
              GI= myFRG$GI
              }else{
-             if(!is.null(myFRG$GI)) 
+             if(!is.null(myFRG$GI))
                {
                colnames(myFRG$GI)=c("SNP","Chromosome","Position")
                GI=as.data.frame(rbind(as.matrix(GI),as.matrix(myFRG$GI)))
@@ -252,7 +320,7 @@ if(!byData & byFile)
              {
              G= myFRG$G
              }else{
-             if(!is.null(myFRG$G)) 
+             if(!is.null(myFRG$G))
                {
                G=as.data.frame(rbind(as.matrix(G),as.matrix(myFRG$G[-1,])))
                }
@@ -306,12 +374,12 @@ chor_taxa=as.character(unique(GM[,2]))
 chor_taxa=chor_taxa[order(as.numeric(as.character(chor_taxa)))]
 chr_letter=grep("[A-Z]|[a-z]",chor_taxa)
 if(!setequal(integer(0),chr_letter))
-  {     
+  {
   GI=as.matrix(GI)
       for(i in 1:(length(chor_taxa)))
         {
          index=GM[,2]==chor_taxa[i]
-         GI[index,2]=i    
+         GI[index,2]=i
         }
   }
 
@@ -322,7 +390,7 @@ if(!setequal(integer(0),chr_letter))
 #print(dim(GI))
 #Follow the MAF to filter markers
 if(!is.null(GD))
-  { 
+  {
   #maf=apply(as.matrix(GD),2,function(one) abs(1-sum(one)/(2*nrow(GD))))
   #maf[maf>0.5]=1-maf[maf>0.5]
   ss=apply(GD,2,sum)
@@ -349,7 +417,7 @@ Memory=GAPIT.Memory(Memory=Memory,Infor="Sampling genotype")
 #Plot third part kinship
 if(!is.null(KI)&file.output)
   {
-  if(KI!=1) 
+  if(KI!=1)
     {
     if(nrow(KI)<2000)
       {
@@ -375,29 +443,29 @@ if(!is.null(KI)&file.output)
       if(file.output)
       {
       print("Creating heat map for kinship...")
-      pdf(paste("GAPIT.Kin.thirdPart.pdf",sep=""), width = 12, height = 12)
-      par(mar = c(25,25,25,25))
-      Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="prepare heatmap")
-      Memory=GAPIT.Memory(Memory=Memory,Infor="prepare heatmap")
-      heatmap.2(theKin,  cexRow =.2, cexCol = 0.2, col=rev(heat.colors(256)), scale="none", symkey=FALSE, trace="none")
-      dev.off()
-      print("Kinship heat map PDF created!") 
+#      pdf(paste("GAPIT.Kin.thirdPart.pdf",sep=""), width = 12, height = 12)
+#      par(mar = c(25,25,25,25))
+#      Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="prepare heatmap")
+#      Memory=GAPIT.Memory(Memory=Memory,Infor="prepare heatmap")
+#      heatmap.2(theKin,  cexRow =.2, cexCol = 0.2, col=rev(heat.colors(256)), scale="none", symkey=FALSE, trace="none")
+#      dev.off()
+      print("Kinship heat map PDF created!")
       Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="plot heatmap")
       Memory=GAPIT.Memory(Memory=Memory,Infor="plot heatmap")
       }
 ## Jiabo Wang add NJ Tree of kinship at 4.5.2017
       if(!is.null(NJtree.group)&file.output)
-        {            
+        {
         for(tr in 1:length(NJtree.type))
            {
            print("Creating NJ Tree for kinship...")
-           pdf(paste("GAPIT.Kin.NJtree.",NJtree.type[tr],".pdf",sep=""), width = 12, height = 12)
-           par(mar = c(5,5,5,5))
-           Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="prepare NJ TREE")
-           Memory=GAPIT.Memory(Memory=Memory,Infor="prepare NJ TREE")
-           plot(as.phylo(hc), type = NJtree.type[tr], tip.color =type_col[clusMember],  use.edge.length = TRUE, col = "gray80",cex=0.8)
-           legend("topright",legend=paste(c("Tatal individuals is: ","Cluster method: ","Group number: "), Optimum[c(1:3)], sep=""),lty=0,cex=1.3,bty="n",bg=par("bg"))
-           dev.off()
+#           pdf(paste("GAPIT.Kin.NJtree.",NJtree.type[tr],".pdf",sep=""), width = 12, height = 12)
+#           par(mar = c(5,5,5,5))
+#           Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="prepare NJ TREE")
+#           Memory=GAPIT.Memory(Memory=Memory,Infor="prepare NJ TREE")
+#           plot(as.phylo(hc), type = NJtree.type[tr], tip.color =type_col[clusMember],  use.edge.length = TRUE, col = "gray80",cex=0.8)
+#           legend("topright",legend=paste(c("Tatal individuals is: ","Cluster method: ","Group number: "), Optimum[c(1:3)], sep=""),lty=0,cex=1.3,bty="n",bg=par("bg"))
+#           dev.off()
            }
         }
         if(!is.null(compress_z))write.table(compress_z,paste("GAPIT.Kin.NJtree.compress_z.txt",sep=""),quote=F)
@@ -406,7 +474,7 @@ if(!is.null(KI)&file.output)
         Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="plot NJ TREE")
         Memory=GAPIT.Memory(Memory=Memory,Infor="plot NJ TREE")
     #rm(hc,clusMember)
-      }#end 
+      }#end
 ## NJ Tree end    } #end of if(nrow(KI)<1000)
     } #end of if(KI!=1)
   } #end of if(!is.null(KI))
@@ -424,8 +492,8 @@ if(!is.null(GP) & kinship.algorithm=="SUPER" & !is.null(bin.size) & !is.null(inc
 	  GK=GD[,SNP.QTN]
     SNPVar=apply(as.matrix(GK),2,var)
     GK=GK[,SNPVar>0]
-    GK=cbind(as.data.frame(GT),as.data.frame(GK)) #add taxa  
-  } 
+    GK=cbind(as.data.frame(GT),as.data.frame(GK)) #add taxa
+  }
 }
 Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="Before creating kinship")
 Memory=GAPIT.Memory(Memory=Memory,Infor="Before creating kinship")
@@ -457,8 +525,8 @@ if(is.null(KI) & (!is.null(GD) |!is.null(GK)) & !kinship.algorithm%in%c("FarmCPU
       theKin= emma.kinship(snps=t(as.matrix(.5*thisGD)), method="additive", use="all")
     }
   if(kinship.algorithm=="Loiselle")theKin= GAPIT.kinship.loiselle(snps=t(as.matrix(.5*thisGD)), method="additive", use="all")
-  if(kinship.algorithm=="VanRaden")theKin= GAPIT.kinship.VanRaden(snps=as.matrix(thisGD)) 
-  if(kinship.algorithm=="Zhang")theKin= GAPIT.kinship.Zhang(snps=as.matrix(thisGD)) 
+  if(kinship.algorithm=="VanRaden")theKin= GAPIT.kinship.VanRaden(snps=as.matrix(thisGD))
+  if(kinship.algorithm=="Zhang")theKin= GAPIT.kinship.Zhang(snps=as.matrix(thisGD))
   if(kinship.algorithm=="Separation")
   {
     thePCA=GAPIT.PCA(X = GD, taxa = GT, PC.number = PCA.total,file.output=F,PCA.total=PCA.total,PCA.col=NULL,PCA.3d=F)
@@ -485,29 +553,29 @@ if(is.null(KI) & (!is.null(GD) |!is.null(GK)) & !kinship.algorithm%in%c("FarmCPU
       {
     #Create heat map for kinship
       print("Creating heat map for kinship...")
-      pdf(paste("GAPIT.Kin.",kinship.algorithm,".pdf",sep=""), width = 12, height = 12)
-      par(mar = c(25,25,25,25))
-      heatmap.2(theKin,  cexRow =.2, cexCol = 0.2, col=rev(heat.colors(256)), scale="none", symkey=FALSE, trace="none")
-      dev.off()
+#      pdf(paste("GAPIT.Kin.",kinship.algorithm,".pdf",sep=""), width = 12, height = 12)
+#      par(mar = c(25,25,25,25))
+#      heatmap.2(theKin,  cexRow =.2, cexCol = 0.2, col=rev(heat.colors(256)), scale="none", symkey=FALSE, trace="none")
+#      dev.off()
       print("Kinship heat map created")
     ## Jiabo Wang add NJ Tree of kinship at 4.5.2017
-      if (!is.null(NJtree.group))      
+      if (!is.null(NJtree.group))
         {
         print("Creating NJ Tree for kinship...")
         for(tr in 1:length(NJtree.type))
            {
-           pdf(paste("GAPIT.Kin.NJtree.",NJtree.type[tr],".pdf",sep=""), width = 12, height = 12)
-           par(mar = c(0,0,0,0))
-           Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="prepare NJ TREE")
-           Memory=GAPIT.Memory(Memory=Memory,Infor="prepare NJ TREE")   
-           plot(as.phylo(hc), type = NJtree.type[tr], tip.color =type_col[clusMember],  use.edge.length = TRUE, col = "gray80",cex=0.6)
-    #legend("topright",legend=c(paste("Tatal numerber of individuals is ",),lty=0,cex=1.3,bty="n",bg=par("bg"))
-           legend("topright",legend=paste(c("Tatal individuals is: ","Group method: ","Group number: "), Optimum[c(1:3)], sep=""),lty=0,cex=1.3,bty="n",bg=par("bg"))
-           dev.off()
+#           pdf(paste("GAPIT.Kin.NJtree.",NJtree.type[tr],".pdf",sep=""), width = 12, height = 12)
+#           par(mar = c(0,0,0,0))
+#           Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="prepare NJ TREE")
+#           Memory=GAPIT.Memory(Memory=Memory,Infor="prepare NJ TREE")
+#           plot(as.phylo(hc), type = NJtree.type[tr], tip.color =type_col[clusMember],  use.edge.length = TRUE, col = "gray80",cex=0.6)
+#    #legend("topright",legend=c(paste("Tatal numerber of individuals is ",),lty=0,cex=1.3,bty="n",bg=par("bg"))
+#           legend("topright",legend=paste(c("Tatal individuals is: ","Group method: ","Group number: "), Optimum[c(1:3)], sep=""),lty=0,cex=1.3,bty="n",bg=par("bg"))
+#           dev.off()
            }
-    # print(Optimum)   
+    # print(Optimum)
         write.table(compress_z,paste("GAPIT.Kin.NJtree.compress_z.txt",sep=""),quote=F)
-        print("Kinship NJ TREE PDF created!")  
+        print("Kinship NJ TREE PDF created!")
         Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="plot NJ TREE")
         Memory=GAPIT.Memory(Memory=Memory,Infor="plot NJ TREE")
         rm(hc)
@@ -518,7 +586,7 @@ if(is.null(KI) & (!is.null(GD) |!is.null(GK)) & !kinship.algorithm%in%c("FarmCPU
     KI=cbind(myGT,as.data.frame(theKin)) #This require big memory. Need a way to solve it.
     print("Writing kinship to file...")
     if(file.output) write.table(KI, paste("GAPIT.Kin.",kinship.algorithm,".csv",sep=""), quote = FALSE, sep = ",", row.names = FALSE,col.names = FALSE)
-    print("Kinship save as file")    
+    print("Kinship save as file")
     rm(theKin)
     gc()
     }
@@ -579,24 +647,25 @@ if(!is.null(GLD) &file.output)
     LDsnp=makeGenotypes(hapmapgeno,sep="",method=as.genotype)   #This need to be converted to genotype object
     print("Caling LDheatmap...")
 #pdf(paste("GAPIT.LD.pdf",sep=""), width = 12, height = 12)
-    pdf(paste("GAPIT.LD.chromosom",LD.chromosome,"(",round(max(0,LD.location-LD.range)/1000000),"_",round((LD.location+LD.range)/1000000),"Mb)",".pdf",sep=""), width = 12, height = 12)
-    par(mar = c(25,25,25,25))
 
-    MyHeatmap <- try(LDheatmap(LDsnp, LDdist, LDmeasure="r", add.map=TRUE,
-    SNP.name=LDsnpName,color=color.rgb(20), name="myLDgrob", add.key=TRUE,geneMapLabelY=0.1) )  
-    if(!inherits(MyHeatmap, "try-error")) 
-      {
-  #Modify the plot
-#      library(grid)
-      # LDheatmap.highlight(MyHeatmap, i = sigsnp, j=sigsnp+1, col = "red")
-      grid.edit(gPath("myLDgrob","heatMap","heatmap"),gp=gpar(col="white",lwd=8))
-      grid.edit(gPath("myLDgrob", "Key", "title"), gp=gpar(cex=.5, col="blue"))  #edit key title size and color
-      grid.edit(gPath("myLDgrob", "heatMap", "title"), gp=gpar(just=c("center","bottom"), cex=0.8, col="black")) #Edit gene map title
-      grid.edit(gPath("myLDgrob", "geneMap","SNPnames"), gp = gpar(cex=0.3,col="black")) #Edit SNP name
-      }else{
-      print("Warning: error in converting genotype. No LD plot!")
-      }
-    dev.off()
+#    pdf(paste("GAPIT.LD.chromosom",LD.chromosome,"(",round(max(0,LD.location-LD.range)/1000000),"_",round((LD.location+LD.range)/1000000),"Mb)",".pdf",sep=""), width = 12, height = 12)
+#    par(mar = c(25,25,25,25))
+#
+#    MyHeatmap <- try(LDheatmap(LDsnp, LDdist, LDmeasure="r", add.map=TRUE,
+#    SNP.name=LDsnpName,color=color.rgb(20), name="myLDgrob", add.key=TRUE,geneMapLabelY=0.1) )
+#    if(!inherits(MyHeatmap, "try-error"))
+#      {
+#  #Modify the plot
+##      library(grid)
+#      # LDheatmap.highlight(MyHeatmap, i = sigsnp, j=sigsnp+1, col = "red")
+#      grid.edit(gPath("myLDgrob","heatMap","heatmap"),gp=gpar(col="white",lwd=8))
+#      grid.edit(gPath("myLDgrob", "Key", "title"), gp=gpar(cex=.5, col="blue"))  #edit key title size and color
+#      grid.edit(gPath("myLDgrob", "heatMap", "title"), gp=gpar(just=c("center","bottom"), cex=0.8, col="black")) #Edit gene map title
+#      grid.edit(gPath("myLDgrob", "geneMap","SNPnames"), gp = gpar(cex=0.3,col="black")) #Edit SNP name
+#      }else{
+#      print("Warning: error in converting genotype. No LD plot!")
+#      }
+#    dev.off()
     print("LD heatmap crated")
     }else{ # alternative of if(nrow(GLD)>1)
     print("Warning: There are less than two SNPs on the region you sepcified. No LD plot!")
