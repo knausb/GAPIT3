@@ -78,7 +78,8 @@
     GP = NULL,GK = NULL,GTindex=NULL,
     bin.size = 1000,inclosure.size = 100,
     sangwich.top=NULL,sangwich.bottom=NULL,
-    file.output=TRUE,kinship.cluster="average",NJtree.group=NULL,NJtree.type=c("fan","unrooted"),
+    file.output=FALSE,
+    kinship.cluster="average",NJtree.group=NULL,NJtree.type=c("fan","unrooted"),
     Create.indicator = FALSE, Major.allele.zero = FALSE,Geno.View.output=TRUE){
 
 # Object: To unify genotype and calculate kinship and PC if required:
