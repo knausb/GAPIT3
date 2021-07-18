@@ -1,26 +1,62 @@
-`GAPIT.Numericalization` <-
-function(x,bit=2,effect="Add",impute="None", Create.indicator = FALSE, Major.allele.zero = FALSE, byRow=TRUE){
+#'
+#' GAPIT.Numericalization
+#'
+#' @description Convert from HapMap to numerical format
+#' 
+#' 
+#' @param x a data.frame containing HapMap formatted data
+#' @param bit myDescription
+#' @param effect myDescription
+#' @param impute myDescription
+#' @param Create.indicator myDescription
+#' @param Major.allele.zero myDescription
+#' @param byRow myDescription
+#' 
+#' @details 
+#' More to come.
+#' 
+#' HapMap has a header but we set header == FALSE???
+#' 
+#' @return a list
+#' @export
+#'
+#' @author Feng Tian and Zhiwu Zhang
+#' 
+#'
+#' @examples
+#' # GAPIT.Numericalization()
+#'
+GAPIT.Numericalization <- function(
+#`GAPIT.Numericalization` <- function(
+  x,
+  bit=2,
+  effect="Add",
+  impute="None", 
+  Create.indicator = FALSE,
+  Major.allele.zero = FALSE,
+  byRow=TRUE){
+  
 #Object: To convert character SNP genotpe to numerical
 #Output: Coresponding numerical value
 #Authors: Feng Tian and Zhiwu Zhang
 # Last update: May 30, 2011 
 ##############################################################################################
+
 if(bit==1)  {
-x[x=="X"]="N"
-x[x=="-"]="N"
-x[x=="+"]="N"
-x[x=="/"]="N"
-x[x=="K"]="Z" #K (for GT genotype)is replaced by Z to ensure heterozygose has the largest value
+  x[x=="X"]="N"
+  x[x=="-"]="N"
+  x[x=="+"]="N"
+  x[x=="/"]="N"
+  x[x=="K"]="Z" #K (for GT genotype)is replaced by Z to ensure heterozygose has the largest value
 }
 
 if(bit==2)  {
-x[x=="XX"]="N"
-x[x=="--"]="N"
-x[x=="++"]="N"
-x[x=="//"]="N"
-x[x=="NN"]="N"
-x[x=="00"]="N"
-
+  x[x=="XX"]="N"
+  x[x=="--"]="N"
+  x[x=="++"]="N"
+  x[x=="//"]="N"
+  x[x=="NN"]="N"
+  x[x=="00"]="N"
 }
 
 n=length(x)

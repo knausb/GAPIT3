@@ -50,8 +50,7 @@
 #' @param Create.indicator myDescription
 #' @param Major.allele.zero myDescription
 #' @param Geno.View.output myDescription
-
-
+#'
 #' @details 
 #' More to come.
 #' 
@@ -118,8 +117,8 @@
 
 
 
-  Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="Genotype start")
-  Memory=GAPIT.Memory(Memory=Memory,Infor="Genotype start")
+#  Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="Genotype start")
+#  Memory=GAPIT.Memory(Memory=Memory,Infor="Genotype start")
   compress_z=NULL
   type_col=NULL
   #Create logical variables

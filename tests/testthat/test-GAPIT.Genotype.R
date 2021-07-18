@@ -6,7 +6,7 @@ test_that("multiplication works", {
 
 test_that("GAPIT.Genotype() works", {
   
-  debug(GAPIT.Genotype)
+#  debug(GAPIT.Genotype)
   
   myGenoFile <- system.file("extdata", "mdp_genotype_test.hmp.txt.gz",
                             package = "GAPIT3")
@@ -18,3 +18,15 @@ test_that("GAPIT.Genotype() works", {
 
 
 
+test_that("GAPIT.Numericalization() works", {
+#
+#  library(GAPIT3)
+#
+  myGenoFile <- system.file("extdata", "mdp_genotype_test.hmp.txt.gz",
+                            package = "GAPIT3")
+  myGenotypes  <- read.table(myGenoFile, header = FALSE)
+#  paste(ncol(myGenotypes) - 11, "samples")
+  
+  myNum <- GAPIT.Numericalization(myGenotypes)
+  myNum[1:3, 1]  
+})

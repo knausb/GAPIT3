@@ -4,9 +4,10 @@ function(Memory =NULL,Infor){
 #Output: Memory 
 #Authors: Zhiwu Zhang
 # Last update: June 6, 2011 
-##############################################################################################
+################################################################################
+
 gc()
-#size <- memory.size()
+#size <- memory.size() # Windows specific
 size <- Inf
 #print(paste("Memory usage: ",size," for", Infor))
 if(is.null(Memory)) {
