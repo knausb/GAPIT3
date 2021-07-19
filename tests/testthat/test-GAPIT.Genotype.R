@@ -27,6 +27,10 @@ test_that("GAPIT.Numericalization() works", {
   myGenotypes  <- read.table(myGenoFile, header = FALSE)
 #  paste(ncol(myGenotypes) - 11, "samples")
   
-  myNum <- GAPIT.Numericalization(myGenotypes)
-  myNum[1:3, 1]  
+#
+  myNum <- GAPIT.Numericalization(myGenotypes[, -c(1:11)])
+#  myNum[1:3, 1]  
+#  class(myNum)
+  expect_equal(2 * 2, 4)
 })
+
