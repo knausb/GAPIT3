@@ -58,6 +58,13 @@
 #'
 #'
 #' @return a list
+#' 
+#' With the following elements: "G", "GD", "GI", "GT", "hasGenotype",
+#'  "genoFormat", "KI", "PC", 
+#'  "byFile", "fullGD", "Timmer", "Memory", "SNP.QTN", "chor_taxa".
+#' 
+#' 
+#' 
 #' @export
 #'
 #' @author Zhiwu Zhang, Jiabo Wang

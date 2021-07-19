@@ -13,7 +13,14 @@ test_that("GAPIT.Genotype() works", {
   myGenotypes  <- read.table(myGenoFile, header = FALSE)
   
   myGT <- GAPIT.Genotype(G = myGenotypes)
-  expect_equal(2 * 2, 4)
+  names(myGT)
+  
+  expect_true(length(myGT) == 14)
+  expect_true(length(myGT$GT) == ncol(myGenotypes) - 11)
+
+  #  nrow(myGT$GI)
+  
+#  expect_equal(2 * 2, 4)
 })
 
 
