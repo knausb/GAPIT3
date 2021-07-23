@@ -5,7 +5,7 @@
 #' @description Convert from HapMap to numerical format
 #' 
 #' 
-#' @param x a data.frame containing HapMap formatted data
+#' @param x a data.frame containing HapMap formatted data minus the first 11 columns (i.e., just the genotypes)
 #' @param bit myDescription
 #' @param effect myDescription
 #' @param impute myDescription
