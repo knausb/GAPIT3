@@ -187,7 +187,7 @@ test_that("GAPIT function works, GLM model", {
 #                                       "h2", "PCA", "GD", "GM", 
 #                                       "KI", "Compression")))
 # })
-# 
+
 
 # test_that("GAPIT function works, SUPER model", {
 #   myPhenoFile <- system.file("extdata", "mdp_traits.txt.gz",
