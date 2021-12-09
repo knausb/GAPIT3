@@ -1,5 +1,10 @@
 
 GAPIT3 [![](https://img.shields.io/badge/Issues-0%2B-brightgreen.svg)](https://github.com/jiabowang/GAPIT3/issues)
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/knausb/GAPIT3/workflows/R-CMD-check/badge.svg)](https://github.com/knausb/GAPIT3/actions)
+<!-- badges: end -->
+
 ===========
 
 Genome Association and Prediction Integrated Tools
