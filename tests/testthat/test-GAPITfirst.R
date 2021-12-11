@@ -2,9 +2,9 @@
 # testthat::test_dir("tests/")
 # library("testthat")
 
-test_that("multiplication works", {
-  expect_equal(2 * 2, 4)
-})
+# test_that("multiplication works", {
+#   expect_equal(2 * 2, 4)
+# })
 
 
 test_that("GAPIT mdp (Y and X) file import works", {
@@ -122,7 +122,6 @@ test_that("GAPIT function works, GLM model", {
   expect_true(inherits(myGAPIT, "list"))
   expect_true(length(myGAPIT) == 11)
 })
-
 
 
 # test_that("GAPIT function works, CMLM model", {
@@ -254,6 +253,7 @@ test_that("GAPIT function works, GLM model", {
 # })
 
 
+<<<<<<< HEAD
 # test_that("GAPIT function works, gBLUP model", {
 #   myPhenoFile <- system.file("extdata", "mdp_traits.txt.gz",
 #                              package = "GAPIT3")
