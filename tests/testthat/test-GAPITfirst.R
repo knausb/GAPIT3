@@ -253,7 +253,6 @@ test_that("GAPIT function works, GLM model", {
 # })
 
 
-<<<<<<< HEAD
 # test_that("GAPIT function works, gBLUP model", {
 #   myPhenoFile <- system.file("extdata", "mdp_traits.txt.gz",
 #                              package = "GAPIT3")
