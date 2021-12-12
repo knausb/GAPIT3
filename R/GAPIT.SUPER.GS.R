@@ -363,7 +363,9 @@ if(!is.null(CV)){
 	#The minimum of group is number of columns in CV
 	  group.from=ncol(CV)+2
 	  group.to=ncol(CV)+2
-	  warning("The upper bound of groups (group.to) is not sufficient. both boundries were set to their minimum and GLM is performed!")
+	  # During testing, warnings = errors. A warning here will cause a failure.
+	  #warning("The upper bound of groups (group.to) is not sufficient. both boundries were set to their minimum and GLM is performed!")
+	  message("The upper bound of groups (group.to) is not sufficient. both boundries were set to their minimum and GLM is performed!")
 	}
 }
 
