@@ -29,8 +29,8 @@ compiler::cmpfun(function(
     snp.pool=snp.pool[,]
     
     # snp.pool is a sample by variant matrix.
-    if( !is.null(snp.pool) && stats::var(snp.pool) == 0){
-    #if( !is.null(snp.pool) && any(stats::var(snp.pool)) == 0){
+    #if( !is.null(snp.pool) && stats::var(snp.pool) == 0){
+    if( !is.null(snp.pool) && any(stats::var(snp.pool) == 0)){
         deltaExpStart = 100
         deltaExpEnd = deltaExpStart
         #print("deltaExp change here")
