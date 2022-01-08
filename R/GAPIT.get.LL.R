@@ -1,5 +1,12 @@
+#'
+#'
+#'
+#'
 `GAPIT.get.LL` <-
-compiler::cmpfun(function(pheno,geno=NULL,snp.pool,X0=NULL){
+compiler::cmpfun(function(
+  pheno,geno=NULL,
+  snp.pool, # snp.pool is a sample by variant matrix.
+  X0=NULL){
     # evaluation of the maximum likelihood
     #Input: ys, xs, vg, delta, Z, X0, snp.pool
     #Output: LL
@@ -20,11 +27,16 @@ compiler::cmpfun(function(pheno,geno=NULL,snp.pool,X0=NULL){
     deltaExpStart = -5
     deltaExpEnd = 5
     snp.pool=snp.pool[,]
+
+    
+    # snp.pool is a sample by variant matrix.
+    #if( !is.null(snp.pool) && stats::var(snp.pool) == 0){
     if( !is.null(snp.pool) && any(stats::var(snp.pool) == 0) ){
         deltaExpStart = 100
         deltaExpEnd = deltaExpStart
         #print("deltaExp change here")
     }
+    
     if(is.null(X0)) {
         X0 = matrix(1, nrow(snp.pool), 1)
     }
