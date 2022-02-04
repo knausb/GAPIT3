@@ -829,7 +829,11 @@ function(GM=NULL,GLM=NULL,QTN=NULL,method="mean",useapply=TRUE,model="A"){
 }#The function FarmCPU.SUB ends here
 
 
-`Blink.cor`<-function(Y,GD,w=NULL,orientation="row",ms=ms,n=ny,m=nm){
+`Blink.cor`<-function(Y,GD,w=NULL,orientation="row",
+                      ms=ms,
+                      n=ny, # This throws "no visible binding" NOTE
+                      m=nm  # This throws "no visible binding" NOTE
+                      ){
   #Objects: calculate R value with covariates
   #Input: pheontype(nx1), ms is marker size for slicing the genotype, genotype(orientation="row", mxn or orientation="col", nxm,) and covariates(nxp)
   #   n is individual number, m is marker number, p is covariate number

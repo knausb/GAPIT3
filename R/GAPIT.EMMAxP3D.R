@@ -241,7 +241,10 @@
     Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="REML")
     Memory=GAPIT.Memory(Memory=Memory,Infor="REML")
 
-    rm(eig.R)
+    if( exists("eig.R") ){
+      rm(eig.R)
+    }
+    
     gc()
     Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="eig.R removed")
     Memory=GAPIT.Memory(Memory=Memory,Infor="eig.R removed")
@@ -278,7 +281,11 @@
   Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="U Matrix")
   Memory=GAPIT.Memory(Memory=Memory,Infor="U Matrix")
 
-  if(SNP.P3D == TRUE)rm(eig.L)
+  if(SNP.P3D == TRUE){
+    if( exists("eig.L") ){
+      rm(eig.L)
+    }
+  }
   gc()
 
   Timmer=GAPIT.Timmer(Timmer=Timmer,Infor="eig.L removed")

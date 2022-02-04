@@ -1,7 +1,7 @@
 `GAPIT.HapMap` <-
 function(G,SNP.effect="Add",SNP.impute="Middle",heading=TRUE, Create.indicator = FALSE, Major.allele.zero = FALSE){
-    #Object: To convert character SNP genotpe to numerical
-    #Output: Coresponding numerical value
+    #Object: To convert character SNP genotype to numerical
+    #Output: Corresponding numerical value
     #Authors: Feng Tian and Zhiwu Zhang
     # Last update: May 30, 2011
     ##############################################################################################
@@ -49,6 +49,12 @@ function(G,SNP.effect="Add",SNP.impute="Middle",heading=TRUE, Create.indicator =
     
     
     if(!Create.indicator) {print(paste("Succesfuly finished converting HapMap which has bits of ", bit,sep="")) }
-    return(list(GT=GT,GD=GD,GI=GI))
+    return(
+      list(
+        GT=GT,
+        GD=GD,
+        GI=GI
+      )
+    )
 }#end of GAPIT.HapMap function
 #=============================================================================================

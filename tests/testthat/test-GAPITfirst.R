@@ -66,6 +66,49 @@ test_that("GAPIT mdp (Y and X) file import works", {
 #             "libloc_213_36e896e939ef6a36.rds")
 
 
+test_that("GAPIT function works, GLM model", {
+  myPhenoFile <- system.file("extdata", "mdp_traits.txt.gz",
+                             package = "GAPIT3")
+  myGenoFile <- system.file("extdata", "mdp_genotype_test.hmp.txt.gz",
+                            package = "GAPIT3")
+  
+  myPhenotypes <- read.table(myPhenoFile, header = TRUE)
+  myPhenotypes <- myPhenotypes[, 1:3]
+  myGenotypes  <- read.table(myGenoFile, header = FALSE)
+  
+  #  setwd(tempdir())
+  #  getwd()
+  
+  myGAPIT <- GAPIT( Y = myPhenotypes,
+                    G = myGenotypes,
+                    PCA.total = 3,
+                    file.output = TRUE,
+#                    file.output = FALSE,
+                    maxLoop = 1,
+                    model = "GLM"
+  )
+  
+  # list.files()
+  #  unlink(gfiles)
+  # list.files()
+  
+  expect_true(inherits(myGAPIT, "list"))
+  expect_true(length(myGAPIT) == 11)
+  
+  # dput( names(myGAPIT) )
+  
+  expect_true( sum( c("GWAS", "h2", "PCA", "GD", "GM") %in% names(myGAPIT) ) == 5 )
+  
+  expect_true( 
+    all( names( myGAPIT ) ==  c("GWAS", "Pred", "mc", "bc",
+                                "mp", "h2", "PCA", "GD", "GM", 
+                                "KI", "Compression")
+    )
+  )
+  
+})
+
+
 test_that("GAPIT function works, MLM model", {
   myPhenoFile <- system.file("extdata", "mdp_traits.txt.gz",
                              package = "GAPIT3")
@@ -92,36 +135,20 @@ test_that("GAPIT function works, MLM model", {
 
   expect_true(inherits(myGAPIT, "list"))
   expect_true(length(myGAPIT) == 11)
-})
+  
+#  dput(names(myGAPIT))
 
-
-test_that("GAPIT function works, GLM model", {
-  myPhenoFile <- system.file("extdata", "mdp_traits.txt.gz",
-                             package = "GAPIT3")
-  myGenoFile <- system.file("extdata", "mdp_genotype_test.hmp.txt.gz",
-                            package = "GAPIT3")
+  expect_true( sum( c("GWAS", "h2", "PCA", "GD", "GM") %in% names(myGAPIT) ) == 5 )
   
-  myPhenotypes <- read.table(myPhenoFile, header = TRUE)
-  myPhenotypes <- myPhenotypes[, 1:3]
-  myGenotypes  <- read.table(myGenoFile, header = FALSE)
-  
-#  setwd(tempdir())
-#  getwd()
-  
-  myGAPIT <- GAPIT( Y = myPhenotypes,
-                    G = myGenotypes,
-                    PCA.total = 3,
-                    file.output = FALSE,
-                    model = "GLM"
+  expect_true( 
+    all( names( myGAPIT ) == c("GWAS", "Pred", "mc", "bc", "mp",
+                               "h2", "PCA", "GD", "GM", 
+                               "KI", "Compression") ) 
   )
   
-  # list.files()
-#  unlink(gfiles)
-  # list.files()
-  
-  expect_true(inherits(myGAPIT, "list"))
-  expect_true(length(myGAPIT) == 11)
 })
+
+
 
 
 test_that("GAPIT function works, CMLM model", {
@@ -209,10 +236,15 @@ test_that("GAPIT function works, SUPER model", {
                     model = "SUPER"
   )
 
+  # devtools::load_all(".")
+  # debug("GAPIT.Genotype")
   # list.files()
 #  unlink(gfiles)
   # list.files()
 
+  lapply(myGAPIT, class)
+  lapply(myGAPIT, is.null)
+  
   expect_true(inherits(myGAPIT, "list"))
   expect_true(length(myGAPIT) == 9)
   expect_true(all(names(myGAPIT) == c("GWAS", "Pred", "mc", "mp",
@@ -247,9 +279,11 @@ test_that("GAPIT function works, FarmCPU model", {
 
   expect_true(inherits(myGAPIT, "list"))
   expect_true(length(myGAPIT) == 5)
-  expect_true(all(names(myGAPIT) == c("GWAS",
-                                      "h2", "PCA",
-                                      "GD", "GM")))
+  expect_true( all( names(myGAPIT) == c("GWAS",
+                                        "h2", "PCA",
+                                        "GD", "GM")
+                    )
+               )
 
 })
 
@@ -284,6 +318,7 @@ test_that("GAPIT function works, gBLUP model", {
                                       "h2", "PCA", "GD", "GM",
                                       "KI", "Compression")))
 })
+
 
 test_that("GAPIT function works, cBLUP model", {
   myPhenoFile <- system.file("extdata", "mdp_traits.txt.gz",

@@ -1,5 +1,11 @@
 `GAPIT.Judge`<-
-function(Y=Y,G=NULL,GD=NULL,KI=NULL,GM=NULL,group.to=group.to,group.from=group.from,sangwich.top=sangwich.top,sangwich.bottom=sangwich.bottom,kinship.algorithm=kinship.algorithm,PCA.total=PCA.total,model="MLM",SNP.test=TRUE){
+function(Y=Y,G=NULL,GD=NULL,KI=NULL,GM=NULL,
+         group.to=group.to,group.from=group.from,
+         sangwich.top=sangwich.top,sangwich.bottom=sangwich.bottom,
+         kinship.algorithm=kinship.algorithm,
+         PCA.total=PCA.total,
+         model="MLM",
+         SNP.test=TRUE){
 #Object: To judge Pheno and Geno data practicability
 #Designed by Zhiwu Zhang
 #Writen by Jiabo Wang

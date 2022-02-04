@@ -88,7 +88,9 @@ DPP=50000,cutOff=0.01,band=5,seqQTN=NULL,plot.style="Oceanic",CG=NULL,plot.bin=1
     {
         #print("Manhattan ploting Chromosomewise")
         GI.MP=cbind(GI.MP,bin.mp)
-        grDevices::pdf(paste("GAPIT.", name.of.trait,".Manhattan.Plot.Chromosomewise.pdf" ,sep = ""), width = 10)
+        grDevices::pdf(
+          paste("GAPIT.", name.of.trait,".Manhattan.Plot.Chromosomewise.pdf" ,sep = ""),
+          width = 10)
             #par(mar = c(5,5,4,3), lab = c(8,5,7))
         graphics::layout(matrix(c(1,1,2,1,1,1,1,1,1),3,3,byrow=TRUE), c(2,1), c(1,1), TRUE)
         for(i in 1:numCHR)
@@ -285,8 +287,12 @@ DPP=50000,cutOff=0.01,band=5,seqQTN=NULL,plot.style="Oceanic",CG=NULL,plot.bin=1
 	    grDevices::pdf(paste("GAPIT.", name.of.trait,".Manhattan.Plot.Genomewise.pdf" ,sep = ""), width = width0,height=height0)
         }
             graphics::par(mar = c(3,6,5,1))
-        	plot(y~x,xlab="",ylab=expression(-log[10](italic(p))) ,
-        	cex.axis=1.5, cex.lab=2, ,col=plot.color[z],axes=FALSE,type = "p",pch=mypch,lwd=wd,cex=s+.3,main = paste(name.of.trait,sep=" 			"),cex.main=2.5)
+        	plot( y~x, xlab="", ylab=expression(-log[10](italic(p))),
+        	      cex.axis=1.5, 
+        	      cex.lab=2, col=plot.color[z],
+        	      axes=FALSE,type = "p",pch=mypch,lwd=wd,cex=s+.3,
+        	      main = paste(name.of.trait,sep=" 			"),
+        	      cex.main=2.5)
         
         #Label QTN positions
         if(is.vector(QTN)){

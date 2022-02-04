@@ -21,7 +21,6 @@
 #' @param group.by param
 #' @param kinship.cluster param
 #' @param kinship.group param
-#'
 #' @param kinship.algorithm param
 #' @param DPP param
 #' @param ngrid param
@@ -1208,7 +1207,18 @@ print("---------------Sandwich bottom: reload bins ---------------------------")
 #SUPER: Final screening
   GK=GK.save
   # print(GK)
-  myBread=GAPIT.Bread(Y=Y,CV=CV,Z=Z,GK=GK,GD=cbind(as.data.frame(GT[GTindex]),as.data.frame(GD)),GM=GI,method=sangwich.bottom,GTindex=GTindex,LD=LD,file.output=file.output)
+  myBread = GAPIT.Bread(
+    Y=Y,
+    CV=CV,
+    Z=Z,
+    GK=GK,
+    GD = cbind( as.data.frame( GT[GTindex] ), as.data.frame(GD) ),
+    GM = GI,
+    method = sangwich.bottom,
+    GTindex = GTindex,
+    LD = LD,
+    file.output = file.output
+  )
   
   print("SUPER saving results...")
 
@@ -1700,7 +1710,25 @@ TV$effect.est=effect.est
 if(byPass | Model.selection) Pred <- NA
 print("before ending GAPIT.Main")
 #print(dim(Compression))
-return (list(Timmer=Timmer,Compression=Compression,kinship.optimum=theK.back, kinship=KI,PC=PC,GWAS=PWI.Filtered, GPS=GPS,Pred=Pred,REMLs=Compression[count,4],Timmer=Timmer,Memory=Memory,SUPER_GD=SUPER_GD,P=ps,effect.snp=DTS[,7],effect.cv=p3d$effect.cv,h2= h2.opt,TV=TV))
+return (
+  list(
+    Timmer=Timmer,
+    Compression=Compression,
+    kinship.optimum=theK.back,
+    kinship=KI,
+    PC=PC,
+    GWAS=PWI.Filtered,
+    GPS=GPS,Pred=Pred,
+    REMLs=Compression[count,4],
+    Timmer=Timmer,Memory=Memory,
+    SUPER_GD=SUPER_GD,
+    P=ps,
+    effect.snp=DTS[,7],
+    effect.cv=p3d$effect.cv,
+    h2= h2.opt,
+    TV=TV
+  )
+)
 } #end if non-SUPER.GS situation, this is a long if statement, structure needs improvement
 }#The function GAPIT.Main ends here
 #=============================================================================================

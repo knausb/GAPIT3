@@ -89,8 +89,8 @@ if(c("m")%in%plot.type)
     text = ~paste("SNP: ", taxa, "<br>Posi: ", posi,"<br>MAF: ", round(maf,2),"<br>Effect: ",round(effect,2)),
     color = ~as.character(zz)
     )%>%
-   add_trace(y=bonferroniCutOff01,name = 'CutOff-0.01',color=I("red"),mode="line",width=1.4,text="")%>%
-   add_trace(y=bonferroniCutOff05,name = 'CutOff-0.05',color=I("red"),mode="line",line=list(width=1.4,dash='dot'),text="")%>%
+   plotly::add_trace(y=bonferroniCutOff01,name = 'CutOff-0.01',color=I("red"),mode="line",width=1.4,text="")%>%
+   plotly::add_trace(y=bonferroniCutOff05,name = 'CutOff-0.05',color=I("red"),mode="line",line=list(width=1.4,dash='dot'),text="")%>%
    plotly::layout(title = "Interactive.Manhattan.Plot",
                   #showticklabels = FALSE,
                   #legend = list(orientation = 'h'),

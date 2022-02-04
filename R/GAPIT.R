@@ -7,18 +7,18 @@
 #' 
 #' @param Y = NULL, data.frame of phenotype data, samples in rows, traits in column, first column is sample name
 #' @param G = NULL, data.frame of genotypic data, HAPMAP format
-#' @param GD = NULL, data.frame of genetic data in 'numerical' format, samples in rows, variants in columns.
-#' @param GM = NULL, Genetic Map data.frame to provide genomic coordinates for GD
-#' @param KI = NULL, Kinship matrix
+#' @param GD = NULL, data.frame of genetic data in 'numerical' format, samples in rows, variants in columns, first column is taxa.
+#' @param GM = NULL, Genetic Map to provide genomic coordinates for GD, a data.frame with the columns "SNP", "Chromosome", "Position".
+#' @param KI = NULL, Kinship matrix (sample by sample)
 #' @param Z = NULL,
-#' @param CV = NULL, Covariate matrix
+#' @param CV = NULL, Covariate matrix, such as Q
 #' @param CV.Inheritance = NULL,
-#' @param GP = NULL,
-#' @param GK = NULL,
+#' @param GP = NULL, data.frame with seven columns (SNP name, chr and base position, P, MAF, N, effect)
+#' @param GK = NULL, Genotype data in numerical format, samples in rows, variants in columns, the first column is sample (taxa)
 #' @param testY = NULL,
-#' @param group.from = 1e+06,
-#' @param group.to = 1e+06,
-#' @param group.by = 20,
+#' @param group.from = 1e+06, minimal group number for clustering for compression
+#' @param group.to = 1e+06, maximum group number for clustering for compression
+#' @param group.by = 20, interval among group number for clustering for compression
 #' @param DPP = 1e+05,
 #' @param kinship.cluster = "average", options: complete, ward, single, mcquitty, median, and centroid 
 #' @param kinship.group = "Mean", options: Max, Min, and Median
@@ -68,8 +68,8 @@
 #' @param PCA.3d = FALSE,
 #' @param NJtree.group = NULL,
 #' @param NJtree.type = c("fan", "unrooted"),
-#' @param sangwich.top = NULL,
-#' @param sangwich.bottom = NULL,
+#' @param sangwich.top = NULL, string indicating model for the top
+#' @param sangwich.bottom = NULL, string indicating model for the bottom
 #' @param QC = TRUE,
 #' @param GTindex = NULL,
 #' @param LD = 0.1,
@@ -127,18 +127,32 @@
 #' @param a2 = 0,
 #' @param adim = 2,
 #' @param Multiple_analysis = FALSE,
-#' @param model = "MLM", options: MLM, GLM, CMLM, MMLM, SUPER, FarmCPU, gBLUP, or cBLUP
+#' @param model = "MLM", options: GLM, MLM, MMLM, MMLM2,
+#'                                SUPER, FarmCPU, FarmCPU2,
+#'                                Blink, Blink2, BlinkC,
+#'                                CMLM,
+#'                                cBLUP, gBLUP, or sBLUP
 #' @param Para = NULL
 #' 
 #' 
 #' @details 
-#' Genome Association and Prediction Integrated Tools
+#' Genome Association and Prediction Integrated Tool
 #' Available models: MLM, GLM, CMLM, MMLM, SUPER, FarmCPU, gBLUP, cBLUP
 #' 
 #' 
 #' @return 
 #' A list
-#' including some of the following elements:MLM, GLM, CMLM, MMLM, SUPER, FarmCPU, gBLUP, cBLUP
+#' GWAS a data.frame ("SNP", "Chromosome", "Position ", "P.value", "maf",
+#'                    "nobs", "Rsquare.of.Model.without.SNP",
+#'                    "Rsquare.of.Model.with.SNP", "effect")
+#' Pred a logical
+#' mc a vector of snp effects
+#' mp a numeric 
+#' PCA a data.frame containing eigenvectors resulting from PCA
+#' GD a data.frame containing genetic data (genotypes)
+#' GM a data.frame containing the genotype map data (Name, Chromosome, Position)
+#' KI a data.frame containing the kinship matrix
+#' Compression a matrix ("Type","Cluster","Group","REML","VA","VE") created by GAPIT.Main
 #'
 #'
 #' @seealso 
@@ -294,96 +308,102 @@
   model = "MLM",
   Para = NULL
 	){
-#Object: To perform GWAS and GPS (Genomic Prediction/Selection)
-#Designed by Zhiwu Zhang
-#Writen by Jiabo Wang
-#Last update: Novenber 3, 2016
-##############################################################################################
-print("--------------------- Welcome to GAPIT ----------------------------")
-echo=TRUE
-all.memo=NULL
+  #Object: To perform GWAS and GPS (Genomic Prediction/Selection)
+  #Designed by Zhiwu Zhang
+  #Writen by Jiabo Wang
+  #Last update: Novenber 3, 2016
+  ##############################################################################################
+  print("--------------------- Welcome to GAPIT ----------------------------")
+  echo=TRUE
+  all.memo=NULL
 
-GAPIT.Version=GAPIT.0000()
-#if(!is.null(model))if(!match(model,c("MLM","CMLM","SUPER","GLM","FarmCPU","Blink","BlinkC","MLMM","gBLUP","cBLUP","sBLUP"))) stop(paste("PLease choose one model from ","MLM","CMLM","SUPER","GLM","FarmCPU","Blink","gBLUP","cBLUP","sBLUP",sep=""))
-#Allow either KI or K, but not both
-if(model%in%c("gBLUP","cBLUP","sBLUP"))
-  {
-    SNP.test=FALSE
-    SUPER_GS=TRUE
+  GAPIT.Version=GAPIT.0000()
+  #if(!is.null(model))if(!match(model,c("MLM","CMLM","SUPER","GLM","FarmCPU","Blink","BlinkC","MLMM","gBLUP","cBLUP","sBLUP"))) stop(paste("PLease choose one model from ","MLM","CMLM","SUPER","GLM","FarmCPU","Blink","gBLUP","cBLUP","sBLUP",sep=""))
+
+  # Allow either KI or K, but not both
+  if( model %in% c("gBLUP","cBLUP","sBLUP") ){
+    SNP.test = FALSE
+    SUPER_GS = TRUE
   }
-if(!is.null(KI)&is.null(GD)&is.null(G)&is.null(file.G)&is.null(file.GD)) SNP.test=FALSE
-model_store=model
-KI0=KI
+  
+  # If we do not have Kinship or genetic data (hapmap, numeric, or by file).
+  if( !is.null(KI) & is.null(GD) & is.null(G) & is.null(file.G) & is.null(file.GD) ){ 
+    SNP.test = FALSE 
+  }
+  
+  model_store = model
+  KI0 = KI
 
 
-print(model_store)
-if(!is.null(Y))
-  {
-     for(m in 1:length(model_store))
-        {
-        model=model_store[m]
-        if(toupper(model)=="BLINK") model="Blink"
-        if(toupper(model)=="FARMCPU") model="FarmCPU"
-        if(toupper(model)=="BLINKC") model="BlinkC"
-        if(toupper(model)=="GBLUP") model="gBLUP"
-        if(toupper(model)=="CBLUP") model="cBLUP"
-        if(toupper(model)=="SBLUP") model="sBLUP"
-        if(toupper(model)=="FARMCPU2") 
-        {model="FarmCPU2"
-         Multi_iter=TRUE
-         # memo=paste(memo,"_Back",sep="")
-        }
-        if(toupper(model)=="BLINK2") 
-        {model="Blink2"
-         Multi_iter=TRUE
-         # memo=paste(memo,"_Back",sep="")
-        }
-        if(toupper(model)=="MLMM2") 
-        {model="MLMM2"
-         Multi_iter=TRUE
-         # memo=paste(memo,"_Back",sep="")
-        }
+  print(model_store)
+  
+  # If we do not have phenotypic (Y) data.
+  if( !is.null(Y) ){
+    # Loop over multiple models (may be 1).
+    for( m in 1:length(model_store )){
+      model = model_store[m]
+      if( toupper(model) == "BLINK" ) model = "Blink"
+      if( toupper(model) == "FARMCPU" ) model = "FarmCPU"
+      if( toupper(model) == "BLINKC" ) model = "BlinkC"
+      if( toupper(model) == "GBLUP" ) model = "gBLUP"
+      if( toupper(model) == "CBLUP" ) model = "cBLUP"
+      if( toupper(model) == "SBLUP" ) model = "sBLUP"
+      if( toupper(model) == "FARMCPU2" ){
+        model = "FarmCPU2"
+        Multi_iter = TRUE
+        # memo=paste(memo,"_Back",sep="")
+      }
+      if(toupper(model)=="BLINK2"){
+        model="Blink2"
+        Multi_iter=TRUE
+        # memo=paste(memo,"_Back",sep="")
+      }
+      if(toupper(model)=="MLMM2"){
+        model = "MLMM2"
+        Multi_iter = TRUE
+        # memo=paste(memo,"_Back",sep="")
+      }
 
-        if(group.from<nrow(Y)) model="CMLM"
+      if( group.from < nrow(Y) ) model="CMLM"
   # }  
-        if(group.to!=group.from)model="CMLM"
-        if(group.to==1&group.from==1)model="GLM"
-        if(!is.null(sangwich.bottom)&!is.null(sangwich.bottom))model="SUPER"
-        if(model=="gBLUP") model="MLM"
-        if(model=="cBLUP") model="CMLM"
-        if(model=="sBLUP") 
-          { model="SUPER"
-            Para$group.from=1000000
-            Para$group.to=1000000
-            Para$group.by=nrow(Y)/10
-          }
+      if( group.to != group.from ) model = "CMLM"
+      if( group.to == 1 & group.from == 1 ) model = "GLM"
+      if( !is.null( sangwich.bottom ) & !is.null(sangwich.bottom) ) model="SUPER"
+      if( model == "gBLUP" ) model="MLM"
+      if( model == "cBLUP" ) model="CMLM"
+      if( model == "sBLUP" ) {
+        model = "SUPER"
+        Para$group.from = 1000000
+        Para$group.to = 1000000
+        Para$group.by = nrow(Y)/10
+      }
 #CMLM
-        if(model=="GLM")
-          {
-            Para$group.from=1
-            Para$group.to=1
-            Para$group.by=group.by
-            Para$kinship.algorithm="VanRaden"
-          }
-        if(model=="MLM")
-          {
-            Para$group.from=1000000
-            Para$group.to=1000000
-            Para$group.by=group.by
-            Para$kinship.algorithm="VanRaden"
-          }
-        if(model=="CMLM")
-          {
-            if(group.from>=group.to)Para$group.from=1
-            Para$group.to=group.to
-            Para$group.by=group.by
-            Para$kinship.algorithm="VanRaden"
+      if(model=="GLM"){
+        Para$group.from = 1
+        Para$group.to = 1
+        Para$group.by = group.by
+        Para$kinship.algorithm = "VanRaden"
+      }
+      if( model == "MLM" ){
+        Para$group.from=1000000
+        Para$group.to=1000000
+        Para$group.by=group.by
+        Para$kinship.algorithm="VanRaden"
+      }
+      if( model == "CMLM" ){
+        if( group.from >= group.to ){
+          Para$group.from=1
+          Para$group.to=group.to
+          Para$group.by=group.by
+          Para$kinship.algorithm="VanRaden"
 #if(Para$group.from==Para$group.to)Para$group.from=10
-            print(group.from)
-            print(group.to)
-          }
-        if(model=="SUPER")
-          {
+          print(group.from)
+          print(group.to)
+        }
+      }
+      
+      
+      if(model=="SUPER"){
             if(!is.null(inclosure.from)&is.null(Para$inclosure.from))Para$inclosure.from=inclosure.from
             if(is.null(Para$inclosure.from))Para$inclosure.from=10
             if(!is.null(inclosure.to)&is.null(Para$inclosure.to))Para$inclosure.to=inclosure.to
@@ -401,243 +421,452 @@ if(!is.null(Y))
             if(!is.null(sangwich.bottom)&is.null(Para$sangwich.bottom))Para$sangwich.bottom=sangwich.bottom  
             if(is.null(Para$sangwich.bottom))Para$sangwich.bottom="SUPER"
             Para$kinship.algorithm="VanRaden"
-          }
-        if(model=="FarmCPU")Para$kinship.algorithm="FarmCPU"
-        if(model=="MLMM")Para$kinship.algorithm="MLMM"
-        if(model=="Blink")Para$kinship.algorithm="Blink"
-        if(model=="FarmCPU2")
-        {Para$kinship.algorithm="FarmCPU"
-         Para$Multi_iter=TRUE}
-        if(model=="MLMM2")
-        {Para$kinship.algorithm="MLMM"
-        Para$Multi_iter=TRUE}
-        if(model=="Blink2")
-        {Para$kinship.algorithm="Blink"
-        Para$Multi_iter=TRUE}
-        if(model=="BlinkC")Para$kinship.algorithm="BlinkC"
-        if(is.null(memo))
-            {
-                Para$memo=model
-            }else{
-                # print(memo)
-                # print(model)
-                Para$memo=paste(memo,".",model,sep="")
-            }
-        all.memo=c(all.memo,Para$memo)
+      }
+      if(model=="FarmCPU")Para$kinship.algorithm="FarmCPU"
+      if(model=="MLMM")Para$kinship.algorithm="MLMM"
+      if(model=="Blink")Para$kinship.algorithm="Blink"
+      if(model=="FarmCPU2"){
+        Para$kinship.algorithm = "FarmCPU"
+        Para$Multi_iter = TRUE
+      }
+      if(model=="MLMM2"){
+        Para$kinship.algorithm="MLMM"
+        Para$Multi_iter=TRUE
+      }
+      if(model=="Blink2"){
+        Para$kinship.algorithm="Blink"
+        Para$Multi_iter=TRUE
+      }
+      if( model == "BlinkC" )Para$kinship.algorithm="BlinkC"
+      if( is.null(memo) ){
+        Para$memo = model
+      }else{
+        # print(memo)
+        # print(model)
+        Para$memo=paste(memo,".",model,sep="")
+      }
+      all.memo = c( all.memo, Para$memo )
 # print(Para$memo)
-GAPIT_list=list(group.from=group.from ,group.to=group.to,group.by=group.by,DPP=DPP,kinship.cluster=kinship.cluster, kinship.group=kinship.group,kinship.algorithm=kinship.algorithm, FDRcut=FDRcut,
-         bin.from=bin.from,bin.to=bin.to,bin.by=bin.by,inclosure.from=inclosure.from,inclosure.to=inclosure.to,inclosure.by=inclosure.by,SNP.P3D=SNP.P3D,SNP.effect=SNP.effect,SNP.impute=SNP.impute,PCA.total=PCA.total, SNP.fraction = SNP.fraction, seed = seed, BINS = 20,SNP.test=SNP.test,
-         SNP.MAF=SNP.MAF,FDR.Rate = FDR.Rate, SNP.FDR=SNP.FDR,SNP.permutation=SNP.permutation,SNP.CV=NULL,SNP.robust="GLM",file.from=file.from, file.to=file.to, file.total=file.total, file.fragment = file.fragment,file.path=file.path, 
-         file.G=file.G, file.Ext.G=file.Ext.G,file.GD=file.GD, file.GM=file.GM, file.Ext.GD=file.Ext.GD,file.Ext.GM=file.Ext.GM,ngrid = 100, llim = -10, ulim = 10, esp = 1e-10,Inter.Plot=Inter.Plot,Inter.type=Inter.type,
-         LD.chromosome=LD.chromosome,LD.location=LD.location,LD.range=LD.range,PCA.col=PCA.col,PCA.3d=PCA.3d,NJtree.group=NJtree.group,NJtree.type=NJtree.type,opt=opt,
-         sangwich.top=sangwich.top,sangwich.bottom=sangwich.bottom,QC=QC,GTindex=GTindex,LD=LD,plot.bin=plot.bin,file.output=file.output,cutOff=cutOff, Model.selection = Model.selection,output.numerical = output.numerical,
-         output.hapmap = output.hapmap, Create.indicator = Create.indicator,QTN=QTN, QTN.round=1,QTN.limit=0, QTN.update=TRUE, QTN.method="Penalty", Major.allele.zero = Major.allele.zero,
-         method.GLM=method.GLM,method.sub=method.sub,method.sub.final="reward",method.bin="static",bin.size=bin.size,bin.selection=bin.selection,model=model,Random.model=Random.model,
-         h2=h2,NQTN=NQTN,QTNDist="normal",effectunit=effectunit,category=category,r=r,cveff=NULL,a2=0,adim=2,Multi_iter=Multi_iter,num_regwas=num_regwas,
-         memo="",Prior=NULL,ncpus=1,maxLoop=maxLoop,threshold.output=threshold.output,WS=c(1e0,1e3,1e4,1e5,1e6,1e7),alpha=alpha,maxOut=100,QTN.position=QTN.position,CG=CG,
-         converge=converge,iteration.output=iteration.output,acceleration=0,iteration.method="accum",PCA.View.output=PCA.View.output,Geno.View.output=Geno.View.output,plot.style="Oceanic",SUPER_GD=NULL,SUPER_GS=SUPER_GS,Multiple_analysis=Multiple_analysis)
+      
+      GAPIT_list = list(
+        group.from=group.from, group.to=group.to, group.by=group.by, DPP=DPP,
+        kinship.cluster=kinship.cluster, kinship.group=kinship.group,
+        kinship.algorithm=kinship.algorithm, FDRcut=FDRcut,
+        bin.from=bin.from,bin.to=bin.to,bin.by=bin.by,
+        inclosure.from=inclosure.from,inclosure.to=inclosure.to,
+        inclosure.by=inclosure.by,SNP.P3D=SNP.P3D,
+        SNP.effect=SNP.effect,SNP.impute=SNP.impute,
+        PCA.total=PCA.total, SNP.fraction = SNP.fraction, seed = seed, BINS = 20,
+        SNP.test=SNP.test,
+        SNP.MAF=SNP.MAF,FDR.Rate = FDR.Rate, SNP.FDR=SNP.FDR,
+        SNP.permutation=SNP.permutation,SNP.CV=NULL,
+        SNP.robust="GLM",file.from=file.from, 
+        file.to=file.to, file.total=file.total, file.fragment = file.fragment,
+        file.path=file.path, 
+        file.G=file.G, file.Ext.G=file.Ext.G,file.GD=file.GD,
+        file.GM=file.GM, file.Ext.GD=file.Ext.GD,file.Ext.GM=file.Ext.GM,
+        ngrid = 100, llim = -10, ulim = 10, esp = 1e-10,Inter.Plot=Inter.Plot,
+        Inter.type=Inter.type,
+        LD.chromosome=LD.chromosome,LD.location=LD.location,
+        LD.range=LD.range,PCA.col=PCA.col,PCA.3d=PCA.3d,
+        NJtree.group=NJtree.group,NJtree.type=NJtree.type,opt=opt,
+        sangwich.top=sangwich.top,sangwich.bottom=sangwich.bottom,
+        QC=QC,GTindex=GTindex,LD=LD,plot.bin=plot.bin,
+        file.output=file.output,cutOff=cutOff, 
+        Model.selection = Model.selection,output.numerical = output.numerical,
+        output.hapmap = output.hapmap, 
+        Create.indicator = Create.indicator,QTN=QTN, QTN.round=1,
+        QTN.limit=0, QTN.update=TRUE, QTN.method="Penalty", 
+        Major.allele.zero = Major.allele.zero,
+        method.GLM=method.GLM,method.sub=method.sub,
+        method.sub.final="reward",method.bin="static",bin.size=bin.size,
+        bin.selection=bin.selection,model=model,Random.model=Random.model,
+        h2=h2,NQTN=NQTN,QTNDist="normal",
+        effectunit=effectunit,category=category,r=r,
+        cveff=NULL,a2=0,adim=2,Multi_iter=Multi_iter,num_regwas=num_regwas,
+        memo="",Prior=NULL,ncpus=1,maxLoop=maxLoop,
+        threshold.output=threshold.output,
+        WS=c(1e0,1e3,1e4,1e5,1e6,1e7),
+        alpha=alpha,maxOut=100,QTN.position=QTN.position,CG=CG,
+        converge=converge,iteration.output=iteration.output,acceleration=0,
+        iteration.method="accum",PCA.View.output=PCA.View.output,
+        Geno.View.output=Geno.View.output,plot.style="Oceanic",
+        SUPER_GD=NULL,
+        SUPER_GS=SUPER_GS,
+        Multiple_analysis=Multiple_analysis
+      )
         
-        G_list_M=rownames(as.matrix(GAPIT_list))
-        P_list_M=rownames(as.matrix(Para))
+      G_list_M = rownames(as.matrix(GAPIT_list))
+      P_list_M = rownames(as.matrix(Para))
 
-        Para=c(GAPIT_list[!G_list_M%in%P_list_M],Para)
-#print(Para$kinship.algorithm)
-        if(SUPER_GS==TRUE)Para$SNP.test=FALSE
-        IC=NULL
-#GAPIT.Version=GAPIT.0000()
-        print("--------------------Processing traits----------------------------------")
-        # if(!is.null(Y)){
-        print("Phenotype provided!")
-        if(ncol(Y)<2)  stop ("Phenotype should have taxa name and one trait at least. Please correct phenotype file!")
-        print(paste("The ",m," model in all.",sep=""))
-        print(model)
-        if(m==1)
-          {
-            DP=GAPIT.DP(G=G,GD=GD,GM=GM,KI=KI0,Z=Z,CV=CV,CV.Inheritance=Para$CV.Inheritance,GP=GP,GK=GK,
-            group.from=Para$group.from ,group.to= Para$group.to,group.by=Para$group.by,DPP= Para$DPP, FDRcut=Para$FDRcut,
-            kinship.cluster=Para$kinship.cluster, kinship.group=Para$kinship.group,kinship.algorithm=Para$ kinship.algorithm, NJtree.group=Para$NJtree.group,NJtree.type=Para$NJtree.type,plot.bin=Para$plot.bin,PCA.col=Para$PCA.col,PCA.3d=Para$PCA.3d,
-             sangwich.top=Para$sangwich.top,sangwich.bottom=Para$sangwich.bottom,LD=Para$LD,bin.from= Para$bin.from,bin.to= Para$bin.to,bin.by= Para$bin.by,inclosure.from= Para$inclosure.from,inclosure.to= Para$inclosure.to,inclosure.by= Para$inclosure.by,
-             SNP.P3D= Para$SNP.P3D,SNP.effect= Para$SNP.effect,SNP.impute= Para$SNP.impute,PCA.total= Para$PCA.total, SNP.fraction = Para$SNP.fraction, seed = Para$seed, 
-             BINS = Para$BINS,SNP.test=Para$SNP.test, SNP.MAF= Para$SNP.MAF,FDR.Rate = Para$FDR.Rate, SNP.FDR= Para$SNP.FDR,SNP.permutation= Para$SNP.permutation,opt=Para$opt,
-             SNP.CV= Para$SNP.CV,SNP.robust= Para$SNP.robust,   Inter.Plot=Para$Inter.Plot,  Inter.type=Para$Inter.type,   
-             file.from= Para$file.from, file.to=Para$file.to, file.total= Para$file.total, file.fragment = Para$file.fragment,file.path= Para$file.path, 
-             file.G= Para$file.G, file.Ext.G= Para$file.Ext.G,file.GD= Para$file.GD, file.GM= Para$file.GM, file.Ext.GD= Para$file.Ext.GD,file.Ext.GM= Para$file.Ext.GM, 
-             ngrid = Para$ngrid, llim = Para$llim, ulim = Para$ulim, esp = Para$esp,Multi_iter=Para$Multi_iter,num_regwas=Para$num_regwas,
-             LD.chromosome= Para$LD.chromosome,LD.location= Para$LD.location,LD.range= Para$LD.range,
-             QC= Para$QC,GTindex= Para$GTindex,cutOff=Para$cutOff, Model.selection = Para$Model.selection,output.numerical = Para$output.numerical,Random.model=Para$Random.model,
-             Create.indicator = Para$Create.indicator,QTN= Para$QTN, QTN.round= Para$QTN.round,QTN.limit= Para$QTN.limit, QTN.update= Para$QTN.update, QTN.method= Para$QTN.method, Major.allele.zero = Para$Major.allele.zero,
-             method.GLM=Para$method.GLM,method.sub= Para$method.sub,method.sub.final= Para$method.sub.final,
-             method.bin= Para$method.bin,bin.size= Para$bin.size,bin.selection= Para$bin.selection,
-             memo= Para$memo,Prior= Para$Prior,ncpus=Para$ncpus,maxLoop= Para$maxLoop,threshold.output= Para$threshold.output,
-             WS= Para$WS,alpha= Para$alpha,maxOut= Para$maxOut,QTN.position= Para$QTN.position, converge=Para$converge,iteration.output= Para$iteration.output,acceleration=Para$acceleration,
-             iteration.method= Para$iteration.method,PCA.View.output=Para$PCA.View.output, 
-             output.hapmap = Para$output.hapmap, file.output= Para$file.output,Geno.View.output=Para$Geno.View.output,plot.style=Para$plot.style,SUPER_GD= Para$SUPER_GD,SUPER_GS= Para$SUPER_GS,CG=Para$CG,model=model)
-          }else{ 
-             DP$kinship.algorithm=Para$kinship.algorithm
-             DP$group.from=Para$group.from
-             DP$group.to=Para$group.to
-             DP$group.by=Para$group.by
-             DP$sangwich.top=Para$sangwich.top
-             DP$sangwich.bottom=Para$sangwich.bottom
-             DP$bin.from= Para$bin.from
-             DP$bin.to= Para$bin.to
-             DP$bin.by= Para$bin.by
-             DP$inclosure.from = Para$inclosure.from
-             DP$inclosure.to= Para$inclosure.toDP$inclosure.by= Para$inclosure.by
-             DP$Multi_iter=Para$Multi_iter
-          }
+      Para=c(GAPIT_list[!G_list_M%in%P_list_M],Para)
+      #print(Para$kinship.algorithm)
+      if( SUPER_GS == TRUE )Para$SNP.test=FALSE
+      IC = NULL
+      #GAPIT.Version=GAPIT.0000()
+      print("--------------------Processing traits----------------------------------")
+      # if(!is.null(Y)){
+      print("Phenotype provided!")
+      if( ncol(Y) < 2 ){
+        stop ("Phenotype should have taxa name and one trait at least. Please correct phenotype file!")
+      }
+      print(paste("The ",m," model in all.",sep=""))
+      print(model)
+      
+      if( m == 1 ){
+        DP = GAPIT.DP(
+          G=G,GD=GD,GM=GM,KI=KI0,Z=Z,CV=CV,
+          CV.Inheritance=Para$CV.Inheritance,
+          GP=GP,GK=GK,
+          group.from=Para$group.from,
+          group.to= Para$group.to,group.by=Para$group.by,
+          DPP= Para$DPP, FDRcut=Para$FDRcut,
+          kinship.cluster=Para$kinship.cluster, 
+          kinship.group=Para$kinship.group,kinship.algorithm=Para$kinship.algorithm,
+          NJtree.group=Para$NJtree.group,NJtree.type=Para$NJtree.type,
+          plot.bin=Para$plot.bin,PCA.col=Para$PCA.col,
+          PCA.3d=Para$PCA.3d,
+          sangwich.top=Para$sangwich.top,sangwich.bottom=Para$sangwich.bottom,
+          LD=Para$LD,bin.from= Para$bin.from,
+          bin.to= Para$bin.to,bin.by= Para$bin.by,
+          inclosure.from= Para$inclosure.from,
+          inclosure.to= Para$inclosure.to,inclosure.by= Para$inclosure.by,
+          SNP.P3D= Para$SNP.P3D,SNP.effect= Para$SNP.effect,
+          SNP.impute= Para$SNP.impute,PCA.total= Para$PCA.total, 
+          SNP.fraction = Para$SNP.fraction, seed = Para$seed, 
+          BINS = Para$BINS,SNP.test=Para$SNP.test, 
+          SNP.MAF= Para$SNP.MAF,FDR.Rate = Para$FDR.Rate, 
+          SNP.FDR= Para$SNP.FDR,
+          SNP.permutation= Para$SNP.permutation,
+          opt=Para$opt,
+          SNP.CV= Para$SNP.CV,SNP.robust= Para$SNP.robust,
+          Inter.Plot=Para$Inter.Plot,  Inter.type=Para$Inter.type,   
+          file.from= Para$file.from, file.to=Para$file.to, 
+          file.total= Para$file.total, 
+          file.fragment = Para$file.fragment,file.path= Para$file.path, 
+          file.G= Para$file.G, file.Ext.G= Para$file.Ext.G,
+          file.GD= Para$file.GD, file.GM= Para$file.GM, 
+          file.Ext.GD= Para$file.Ext.GD,file.Ext.GM= Para$file.Ext.GM, 
+          ngrid = Para$ngrid, llim = Para$llim, ulim = Para$ulim,
+          esp = Para$esp,Multi_iter=Para$Multi_iter,num_regwas=Para$num_regwas,
+          LD.chromosome= Para$LD.chromosome,
+          LD.location= Para$LD.location,LD.range= Para$LD.range,
+          QC= Para$QC,GTindex= Para$GTindex,cutOff=Para$cutOff, 
+          Model.selection = Para$Model.selection,
+          output.numerical = Para$output.numerical,
+          Random.model=Para$Random.model,
+          Create.indicator = Para$Create.indicator,QTN= Para$QTN, 
+          QTN.round= Para$QTN.round,QTN.limit= Para$QTN.limit, 
+          QTN.update= Para$QTN.update, QTN.method= Para$QTN.method, 
+          Major.allele.zero = Para$Major.allele.zero,
+          method.GLM=Para$method.GLM,
+          method.sub= Para$method.sub,method.sub.final= Para$method.sub.final,
+          method.bin= Para$method.bin,bin.size= Para$bin.size,
+          bin.selection= Para$bin.selection,
+          memo= Para$memo,Prior= Para$Prior,ncpus=Para$ncpus,
+          maxLoop= Para$maxLoop,threshold.output= Para$threshold.output,
+          WS= Para$WS,alpha= Para$alpha,
+          maxOut= Para$maxOut,QTN.position= Para$QTN.position, 
+          converge=Para$converge,
+          iteration.output= Para$iteration.output,
+          acceleration=Para$acceleration,
+          iteration.method= Para$iteration.method,
+          PCA.View.output=Para$PCA.View.output, 
+          output.hapmap = Para$output.hapmap, file.output= Para$file.output,
+          Geno.View.output=Para$Geno.View.output,
+          plot.style=Para$plot.style,
+          SUPER_GD= Para$SUPER_GD,
+          SUPER_GS= Para$SUPER_GS,
+          CG=Para$CG,
+          model=model
+        )
+      }else{ 
+        DP$kinship.algorithm=Para$kinship.algorithm
+        DP$group.from=Para$group.from
+        DP$group.to=Para$group.to
+        DP$group.by=Para$group.by
+        DP$sangwich.top=Para$sangwich.top
+        DP$sangwich.bottom=Para$sangwich.bottom
+        DP$bin.from= Para$bin.from
+        DP$bin.to= Para$bin.to
+        DP$bin.by= Para$bin.by
+        DP$inclosure.from = Para$inclosure.from
+        DP$inclosure.to= Para$inclosure.toDP$inclosure.by= Para$inclosure.by
+        DP$Multi_iter=Para$Multi_iter
+      }
 
-        for (trait in 2: ncol(Y))  
-          {
-             traitname=colnames(Y)[trait]
-###Statistical distributions of phenotype
-###Correlation between phenotype and principal components
-             print(paste("Processing trait: ",traitname,sep=""))
-             if(!is.null(Para$memo)) traitname=paste(Para$memo,".",traitname,sep="")
-             if(!is.null(Y) & Para$file.output)ViewPhenotype<-GAPIT.Phenotype.View(myY=Y[,c(1,trait)],traitname=traitname,memo=Para$memo)
-             if(!Para$kinship.algorithm%in%c("FarmCPU","MLMM","Blink","BlinkC")&is.null(DP$KI))
-             {
-                myKI_test=GAPIT.kinship.VanRaden(snps=as.matrix(DP$GD[,-1]))     #  build kinship
-                colnames(myKI_test)=as.character(DP$GD[,1])
-                KI0=cbind(as.character(DP$GD[,1]),as.data.frame(myKI_test))
-             }
-             if(!is.null(KI0))DP$KI=KI0 
-             Judge=GAPIT.Judge(Y=Y[,c(1,trait)],G=DP$G,GD=DP$GD,KI=DP$KI,GM=DP$GM,group.to=DP$group.to,group.from=DP$group.from,sangwich.top=DP$sangwich.top,sangwich.bottom=DP$sangwich.bottom,kinship.algorithm=DP$kinship.algorithm,PCA.total=DP$PCA.total,model=DP$model,SNP.test=DP$SNP.test)
-             DP$group.from=Judge$group.from
-             DP$group.to=Judge$group.to
-             DP$name.of.trait=traitname
-             DP$Y=Y[!is.na(Y[,trait]),c(1,trait)]
-             DP$model=model
-# print(Para$SNP.test)
-             IC=GAPIT.IC(DP=DP)
-             SS=GAPIT.SS(DP=DP, IC=IC, buspred=buspred, lmpred=lmpred)
-             if(Para$SNP.test&Para$file.output)ID=GAPIT.ID(DP=DP,IC=IC,SS=SS)
-          }#for loop trait
-#print(SNP.test)
-        print("GAPIT accomplished successfully for multiple traits. Result are saved")
+      for( trait in 2:ncol(Y) ){
+        traitname=colnames(Y)[trait]
+        ### Statistical distributions of phenotype
+        ### Correlation between phenotype and principal components
+        print(paste("Processing trait: ",traitname,sep=""))
+        if( !is.null( Para$memo ) ) {
+          traitname = paste(Para$memo, ".", traitname, sep="")
+        }
+        if(!is.null(Y) & Para$file.output){
+          ViewPhenotype <- GAPIT.Phenotype.View(myY = Y[,c(1,trait)], 
+                                                traitname = traitname,
+                                                memo=Para$memo)
+        }
+        if( !Para$kinship.algorithm %in% c("FarmCPU","MLMM","Blink","BlinkC") & is.null(DP$KI) ){
+          myKI_test=GAPIT.kinship.VanRaden(snps=as.matrix(DP$GD[,-1]))     #  build kinship
+          colnames(myKI_test)=as.character(DP$GD[,1])
+          KI0=cbind(as.character(DP$GD[,1]),as.data.frame(myKI_test))
+        }
+        if( !is.null(KI0) ){
+          DP$KI=KI0
+        }
+        
+        Judge = GAPIT.Judge(
+          Y=Y[,c(1,trait)],
+          G=DP$G,GD=DP$GD,KI=DP$KI,GM=DP$GM,group.to=DP$group.to,
+          group.from=DP$group.from,sangwich.top=DP$sangwich.top,
+          sangwich.bottom=DP$sangwich.bottom,
+          kinship.algorithm=DP$kinship.algorithm,
+          PCA.total=DP$PCA.total,
+          model=DP$model,
+          SNP.test=DP$SNP.test
+        )
+        
+        
+        DP$group.from=Judge$group.from
+        DP$group.to=Judge$group.to
+        DP$name.of.trait=traitname
+        DP$Y=Y[!is.na(Y[,trait]),c(1,trait)]
+        DP$model=model
+        # print(Para$SNP.test)
+        IC = GAPIT.IC( DP = DP )
+        SS = GAPIT.SS( DP = DP, IC = IC, buspred = buspred, lmpred = lmpred)
+        if( Para$SNP.test & Para$file.output ){
+          ID = GAPIT.ID( DP = DP, IC = IC, SS = SS )
+        }
+      }#for loop trait
+      
+      
+      #print(SNP.test)
+      print("GAPIT accomplished successfully for multiple traits. Result are saved")
 #        print("It is OK to see this: 'There were 50 or more warnings (use warnings() to see the first 50)'")
-        out <- list()
-        out$QTN<-QTN.position
-        out$GWAS<-SS$GWAS
-        out$Pred<-SS$Pred
-        out$QTN<-IC$QTN
-        out$Power<-SS$Power
-        out$FDR<-SS$FDR
-        out$Power.Alpha<-SS$Power.Alpha
-        out$alpha<-SS$alpha
-        out$mc=SS$mc
-        out$bc=SS$bc
-        out$mp=SS$mp
-        out$h2=SS$h2
-        out$PCA=IC$myallCV
-        out$GD=DP$GD
-        out$GM=DP$GM
-        out$KI=IC$K
-        out$GM=DP$GM
-        out$Compression=SS$Compression
-        if(Para$SNP.test==TRUE)names(out$GWAS$P.value)="mp"
-        if(kinship.algorithm=="FarmCPU")names(out$Pred)=c("Taxa",traitname,"Prediction")
-#return (out)
-        }#end of model loop
+      out <- list()
+      out$QTN<-QTN.position
+      out$GWAS<-SS$GWAS
+      out$Pred<-SS$Pred
+      out$QTN<-IC$QTN
+      out$Power<-SS$Power
+      out$FDR<-SS$FDR
+      out$Power.Alpha<-SS$Power.Alpha
+      out$alpha<-SS$alpha
+      out$mc=SS$mc
+      out$bc=SS$bc
+      out$mp=SS$mp
+      out$h2=SS$h2
+      out$PCA=IC$myallCV
+      out$GD=DP$GD
+      out$GM=DP$GM
+      out$KI=IC$K
+      out$GM=DP$GM
+      out$Compression=SS$Compression
+      if(Para$SNP.test==TRUE)names(out$GWAS$P.value)="mp"
+      if(kinship.algorithm=="FarmCPU")names(out$Pred)=c("Taxa",traitname,"Prediction")
+      #return (out)
+    }#end of model loop
   }else{# is.null(Y)
-  #print(Para$SNP.MAF)
-        out <- list()
-        GAPIT_list=list(group.from=group.from ,group.to=group.to,group.by=group.by,DPP=DPP,kinship.cluster=kinship.cluster, kinship.group=kinship.group,kinship.algorithm=kinship.algorithm, 
-         bin.from=bin.from,bin.to=bin.to,bin.by=bin.by,inclosure.from=inclosure.from,inclosure.to=inclosure.to,inclosure.by=inclosure.by,SNP.P3D=SNP.P3D,SNP.effect=SNP.effect,SNP.impute=SNP.impute,PCA.total=PCA.total, SNP.fraction = SNP.fraction, seed = seed, BINS = 20,SNP.test=SNP.test,
-         SNP.MAF=SNP.MAF,FDR.Rate = FDR.Rate, SNP.FDR=SNP.FDR,SNP.permutation=SNP.permutation,SNP.CV=NULL,SNP.robust="GLM",file.from=file.from, file.to=file.to, file.total=file.total, file.fragment = file.fragment,file.path=file.path, 
-         file.G=file.G, file.Ext.G=file.Ext.G,file.GD=file.GD, file.GM=file.GM, file.Ext.GD=file.Ext.GD,file.Ext.GM=file.Ext.GM,ngrid = 100, llim = -10, ulim = 10, esp = 1e-10,Inter.Plot=Inter.Plot,Inter.type=Inter.type,
-         LD.chromosome=LD.chromosome,LD.location=LD.location,LD.range=LD.range,PCA.col=PCA.col,PCA.3d=PCA.3d,NJtree.group=NJtree.group,NJtree.type=NJtree.type,opt=opt,
-         sangwich.top=sangwich.top,sangwich.bottom=sangwich.bottom,QC=QC,GTindex=GTindex,LD=LD,plot.bin=plot.bin,file.output=file.output,cutOff=cutOff, Model.selection = Model.selection,output.numerical = output.numerical,
-         output.hapmap = output.hapmap, Create.indicator = Create.indicator,QTN=QTN, QTN.round=1,QTN.limit=0, QTN.update=TRUE, QTN.method="Penalty", Major.allele.zero = Major.allele.zero,
-         method.GLM=method.GLM,method.sub=method.sub,method.sub.final="reward",method.bin="static",bin.size=bin.size,bin.selection=bin.selection,model=model,Random.model=Random.model,
-         h2=h2,NQTN=NQTN,QTNDist="normal",effectunit=effectunit,category=category,r=r,cveff=NULL,a2=0,adim=2,Multi_iter=Multi_iter,num_regwas=num_regwas,
-         memo="",Prior=NULL,ncpus=1,maxLoop=maxLoop,threshold.output=threshold.output,WS=c(1e0,1e3,1e4,1e5,1e6,1e7),alpha=alpha,maxOut=100,QTN.position=QTN.position,CG=CG,
-         converge=converge,iteration.output=iteration.output,acceleration=0,iteration.method="accum",PCA.View.output=PCA.View.output,Geno.View.output=Geno.View.output,plot.style="Oceanic",SUPER_GD=NULL,SUPER_GS=SUPER_GS,Multiple_analysis=Multiple_analysis)
-        if(model=="MLM")
-          {
-            Para$group.from=1000000
-            Para$group.to=1000000
-            Para$group.by=group.by
-          }
-        G_list_M=rownames(as.matrix(GAPIT_list))
-        P_list_M=rownames(as.matrix(Para))
-        if(is.null(memo))
-            {
-                Para$memo=model
-            }else{
-                Para$memo=paste(memo,".",mode,sep="")
-            }
-        all.memo=c(all.memo,Para$memo)
-        Para=c(GAPIT_list[!G_list_M%in%P_list_M],Para)
-        myGenotype<-GAPIT.Genotype(G=G,GD=GD,GM=GM,KI=KI,kinship.algorithm=kinship.algorithm,PCA.total=PCA.total,SNP.fraction=SNP.fraction,SNP.test=SNP.test,
- file.path=file.path,file.from=file.from, file.to=file.to, file.total=file.total, file.fragment = file.fragment, file.G=file.G, 
- file.Ext.G=file.Ext.G,file.GD=file.GD, file.GM=file.GM, file.Ext.GD=file.Ext.GD,file.Ext.GM=file.Ext.GM,
- SNP.MAF=SNP.MAF,FDR.Rate = FDR.Rate,SNP.FDR=SNP.FDR,SNP.effect=SNP.effect,SNP.impute=SNP.impute,NJtree.group=NJtree.group,NJtree.type=NJtree.type,
- LD.chromosome=LD.chromosome,LD.location=LD.location,LD.range=LD.range,GP=GP,GK=GK,bin.size=NULL,inclosure.size=NULL, 
- sangwich.top=NULL,sangwich.bottom=sangwich.bottom,GTindex=NULL,file.output=file.output, Create.indicator = Create.indicator, Major.allele.zero = Major.allele.zero,Geno.View.output=Geno.View.output,PCA.col=PCA.col,PCA.3d=PCA.3d)
-        GD=myGenotype$GD
-        GI=myGenotype$GI
-        GT=myGenotype$GT
-#G=myGenotype$G
-        chor_taxa=myGenotype$chor_taxa
-        rownames(GD)=GT
-        colnames(GD)=GI[,1]
-        taxa=GT
-   if(!is.null(chor_taxa))
-   {
-     chro=as.numeric(as.matrix(GI[,2]))
-     for(i in 1:length(chro))
-     {
-      chro[chro==i]=chor_taxa[i]
-     }
-     GI[,2]=chro
-   }
-#print(GD[1:5,1:5])
-        if(output.numerical) 
-          {
-            utils::write.table(cbind(taxa,GD),  "GAPIT.Genotype.Numerical.txt", quote = FALSE, sep = "\t", row.names = F,col.names = T)
-            utils::write.table(GI,  "GAPIT.Genotype.map.txt", quote = FALSE, sep = "\t", row.names = F,col.names = T)
-          }
-        if(output.hapmap) utils::write.table(myGenotype$G,  "GAPIT.Genotype.hmp.txt", quote = FALSE, sep = "\t", row.names = FALSE,col.names = FALSE)
-#GD=cbind(as.data.frame(GT),GD)
-        if(!is.null(seed))set.seed(seed)
-#print(Para$NQTN)
-        if(!is.null(Para$NQTN)&!is.null(Para$h2))
-          {
-            myG_simulation<-GAPIT.Phenotype.Simulation(GD=cbind(as.data.frame(myGenotype$GT),myGenotype$GD),GM=myGenotype$GI,h2=Para$h2,NQTN=Para$NQTN,QTNDist=Para$QTNDist,effectunit=Para$effectunit,category=Para$category,r=Para$r,cveff=Para$cveff,a2=Para$a2,adim=Para$adim)
-            out=c(out,myG_simulation)
-          }
-        out$GD=data.frame(cbind(as.data.frame(GT),as.data.frame(GD)))
-        out$GM=GI
-        out$G=myGenotype$G
-        out$kinship=myGenotype$KI
-        out$PCA=myGenotype$PC
-        out$chor_taxa=chor_taxa
+    #print(Para$SNP.MAF)
+    out <- list()
+    
+    GAPIT_list = list(
+      group.from=group.from ,group.to=group.to,group.by=group.by,DPP=DPP,
+      kinship.cluster=kinship.cluster, 
+      kinship.group=kinship.group,
+      kinship.algorithm=kinship.algorithm, 
+      bin.from=bin.from,bin.to=bin.to,bin.by=bin.by,
+      inclosure.from=inclosure.from,
+      inclosure.to=inclosure.to,inclosure.by=inclosure.by,
+      SNP.P3D=SNP.P3D,SNP.effect=SNP.effect,
+      SNP.impute=SNP.impute,PCA.total=PCA.total, 
+      SNP.fraction = SNP.fraction, seed = seed, BINS = 20,SNP.test=SNP.test,
+      SNP.MAF=SNP.MAF,FDR.Rate = FDR.Rate, SNP.FDR=SNP.FDR,
+      SNP.permutation=SNP.permutation,SNP.CV=NULL,
+      SNP.robust="GLM",file.from=file.from, file.to=file.to,
+      file.total=file.total,
+      file.fragment = file.fragment,
+      file.path=file.path, 
+      file.G=file.G, file.Ext.G=file.Ext.G,file.GD=file.GD,
+      file.GM=file.GM, file.Ext.GD=file.Ext.GD,
+      file.Ext.GM=file.Ext.GM,
+      ngrid = 100, llim = -10, ulim = 10, esp = 1e-10,
+      Inter.Plot=Inter.Plot,Inter.type=Inter.type,
+      LD.chromosome=LD.chromosome,LD.location=LD.location,
+      LD.range=LD.range,PCA.col=PCA.col,PCA.3d=PCA.3d,
+      NJtree.group=NJtree.group,NJtree.type=NJtree.type,opt=opt,
+      sangwich.top=sangwich.top,sangwich.bottom=sangwich.bottom,
+      QC=QC,GTindex=GTindex,LD=LD,plot.bin=plot.bin,
+      file.output=file.output,cutOff=cutOff, 
+      Model.selection = Model.selection,
+      output.numerical = output.numerical,
+      output.hapmap = output.hapmap, 
+      Create.indicator = Create.indicator,QTN=QTN, 
+      QTN.round=1,QTN.limit=0, QTN.update=TRUE, 
+      QTN.method="Penalty", Major.allele.zero = Major.allele.zero,
+      method.GLM=method.GLM,method.sub=method.sub,
+      method.sub.final="reward",method.bin="static",
+      bin.size=bin.size,bin.selection=bin.selection,
+      model=model,Random.model=Random.model,
+      h2=h2,NQTN=NQTN,QTNDist="normal",
+      effectunit=effectunit,category=category,r=r,
+      cveff=NULL,a2=0,adim=2,Multi_iter=Multi_iter,
+      num_regwas=num_regwas,
+      memo="",Prior=NULL,ncpus=1,
+      maxLoop=maxLoop,threshold.output=threshold.output,
+      WS=c(1e0,1e3,1e4,1e5,1e6,1e7),alpha=alpha,
+      maxOut=100,QTN.position=QTN.position,CG=CG,
+      converge=converge,iteration.output=iteration.output,
+      acceleration=0,iteration.method="accum",
+      PCA.View.output=PCA.View.output,
+      Geno.View.output=Geno.View.output,
+      plot.style="Oceanic",SUPER_GD=NULL,
+      SUPER_GS=SUPER_GS,
+      Multiple_analysis=Multiple_analysis
+    )
+    
+    if(model=="MLM"){
+      Para$group.from=1000000
+      Para$group.to=1000000
+      Para$group.by=group.by
+    }
+    G_list_M=rownames(as.matrix(GAPIT_list))
+    P_list_M=rownames(as.matrix(Para))
+    if(is.null(memo)){
+      Para$memo=model
+    }else{
+      Para$memo = paste(memo, ".", mode, sep="")
+    }
+    all.memo = c(all.memo, Para$memo)
+    Para = c( GAPIT_list[!G_list_M%in%P_list_M], Para )
+    
+    myGenotype <- GAPIT.Genotype(
+      G = G,GD=GD,GM=GM,KI=KI,
+      kinship.algorithm=kinship.algorithm,
+      PCA.total=PCA.total,SNP.fraction=SNP.fraction,
+      SNP.test=SNP.test,
+      file.path=file.path,file.from=file.from,
+      file.to=file.to, file.total=file.total,
+      file.fragment = file.fragment, file.G=file.G,
+      file.Ext.G=file.Ext.G,file.GD=file.GD, file.GM=file.GM, 
+      file.Ext.GD=file.Ext.GD,file.Ext.GM=file.Ext.GM,
+      SNP.MAF=SNP.MAF,FDR.Rate = FDR.Rate,SNP.FDR=SNP.FDR,
+      SNP.effect=SNP.effect,SNP.impute=SNP.impute,
+      NJtree.group=NJtree.group,NJtree.type=NJtree.type,
+      LD.chromosome=LD.chromosome,LD.location=LD.location,
+      LD.range=LD.range,GP=GP,GK=GK,bin.size=NULL,
+      inclosure.size=NULL,
+      sangwich.top=NULL,sangwich.bottom=sangwich.bottom,
+      GTindex=NULL,file.output=file.output, 
+      Create.indicator = Create.indicator, 
+      Major.allele.zero = Major.allele.zero,
+      Geno.View.output=Geno.View.output,
+      PCA.col=PCA.col,
+      PCA.3d=PCA.3d
+    )
+    
+    GD=myGenotype$GD
+    GI=myGenotype$GI
+    GT=myGenotype$GT
+    #G=myGenotype$G
+    chor_taxa=myGenotype$chor_taxa
+    rownames(GD)=GT
+    colnames(GD)=GI[,1]
+    taxa=GT
+    if( !is.null(chor_taxa) ){
+      chro = as.numeric( as.matrix(GI[,2]) )
+      for( i in 1:length(chro) ){
+        chro[ chro == i ] = chor_taxa[i]
+      }
+      GI[,2] = chro
+    }
+    #print(GD[1:5,1:5])
+    if(output.numerical) {
+      utils::write.table(
+        cbind(taxa, GD),
+        "GAPIT.Genotype.Numerical.txt",
+        quote = FALSE, sep = "\t", row.names = F,
+        col.names = T
+      )
+      utils::write.table(
+        GI,
+        "GAPIT.Genotype.map.txt",
+        quote = FALSE, sep = "\t", 
+        row.names = F,
+        col.names = T
+      )
+    }
+    
+    if(output.hapmap){
+      utils::write.table(myGenotype$G,  
+                         "GAPIT.Genotype.hmp.txt", 
+                         quote = FALSE, 
+                         sep = "\t", 
+                         row.names = FALSE,
+                         col.names = FALSE
+                         )
+    }
+    #GD=cbind(as.data.frame(GT),GD)
+    if( !is.null(seed) )set.seed(seed)
+    #print(Para$NQTN)
+    
+    if( !is.null(Para$NQTN) & !is.null(Para$h2) ){
+      
+      myG_simulation <- GAPIT.Phenotype.Simulation(
+        GD = cbind( as.data.frame( myGenotype$GT), myGenotype$GD ),
+        GM = myGenotype$GI,
+        h2 = Para$h2,
+        NQTN = Para$NQTN,
+        QTNDist = Para$QTNDist,
+        effectunit=Para$effectunit,
+        category=Para$category,
+        r=Para$r,cveff=Para$cveff,
+        a2=Para$a2,adim=Para$adim
+      )
+      
+      out = c( out, myG_simulation )
+    }
+    
+    out$GD = data.frame( cbind( as.data.frame(GT), as.data.frame(GD) ) )
+    out$GM = GI
+    out$G = myGenotype$G
+    out$kinship = myGenotype$KI
+    out$PCA = myGenotype$PC
+    out$chor_taxa = chor_taxa
   }# is.null(Y)
 
-#print(tail(IC$GM))
-model_store=all.memo
-if(!is.null(Y)&SNP.test)if(Multiple_analysis&Para$file.output&length(model_store)*(ncol(Y)-1)>1&length(model_store)*(ncol(Y)-1)<9)
+  #print(tail(IC$GM))
+  model_store = all.memo
+  if( !is.null(Y) & SNP.test )if(Multiple_analysis & Para$file.output & length(model_store) * (ncol(Y)-1) > 1 & length(model_store)*( ncol(Y)-1 ) < 9 )
   { 
-  #print(DP$QTN.position)
-   GMM=GAPIT.Multiple.Manhattan(model_store=model_store,Y=Y,GM=IC$GM,seqQTN=DP$QTN.position,cutOff=DP$cutOff)
-#print(str(GMM$multip_mapP))
-   GAPIT.Circle.Manhatton.Plot(band=1,r=3,GMM$multip_mapP,plot.type=c("c","q"),signal.line=1,xz=GMM$xz,threshold=DP$cutOff)
+    #print(DP$QTN.position)
+    GMM=GAPIT.Multiple.Manhattan(model_store=model_store,Y=Y,GM=IC$GM,seqQTN=DP$QTN.position,cutOff=DP$cutOff)
+    #print(str(GMM$multip_mapP))
+    GAPIT.Circle.Manhatton.Plot(band=1,r=3,GMM$multip_mapP,plot.type=c("c","q"),signal.line=1,xz=GMM$xz,threshold=DP$cutOff)
   }# end of mutiple manhantton plot
 
-if(file.output&!SNP.test&model_store%in%c("gBLUP","cBLUP","sBLUP")&Inter.Plot)
+  if( file.output & !SNP.test & model_store %in% c("gBLUP","cBLUP","sBLUP") & Inter.Plot)
   { 
-  print("here will start interactive for GS !!!")
-  GAPIT.Interactive.GS(model_store=model_store,Y=Y)
-  if(!is.null(testY))GAPIT.Interactive.GS(model_store=model_store,Y=Y,testY=testY)
+    print("here will start interactive for GS !!!")
+    GAPIT.Interactive.GS( model_store = model_store, Y = Y )
+    if( !is.null(testY) ){
+      
+      GAPIT.Interactive.GS(
+        model_store = model_store,
+        Y = Y,
+        testY = testY
+      )
+      
+    }
 
-#print(str(GMM$multip_mapP))
-#GAPIT.Circle.Manhatton.Plot(band=1,r=3,GMM$multip_mapP,plot.type=c("c","q"),signal.line=1,xz=GMM$xz,threshold=DP$cutOff)
+    #print(str(GMM$multip_mapP))
+    #GAPIT.Circle.Manhatton.Plot(band=1,r=3,GMM$multip_mapP,plot.type=c("c","q"),signal.line=1,xz=GMM$xz,threshold=DP$cutOff)
   }# end of mutiple manhantton plot
 
 
-
-
-
-return (out)
+  return (out)
 }  #end of GAPIT function
+
