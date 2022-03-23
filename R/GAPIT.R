@@ -321,6 +321,7 @@
   #if(!is.null(model))if(!match(model,c("MLM","CMLM","SUPER","GLM","FarmCPU","Blink","BlinkC","MLMM","gBLUP","cBLUP","sBLUP"))) stop(paste("PLease choose one model from ","MLM","CMLM","SUPER","GLM","FarmCPU","Blink","gBLUP","cBLUP","sBLUP",sep=""))
 
   # Allow either KI or K, but not both
+  # Why would we have K here? K does not appear above this line. What is K?
   if( model %in% c("gBLUP","cBLUP","sBLUP") ){
     SNP.test = FALSE
     SUPER_GS = TRUE
@@ -338,6 +339,8 @@
   print(model_store)
   
   # If we do not have phenotypic (Y) data.
+  # BJK: if Y is NULL then !is.null(Y) == FALSE
+  # BJK: this comment should be "If we have phenotypic (Y) data".
   if( !is.null(Y) ){
     # Loop over multiple models (may be 1).
     for( m in 1:length(model_store )){
@@ -501,7 +504,9 @@
 
       Para=c(GAPIT_list[!G_list_M%in%P_list_M],Para)
       #print(Para$kinship.algorithm)
-      if( SUPER_GS == TRUE )Para$SNP.test=FALSE
+      if( SUPER_GS == TRUE ){
+        Para$SNP.test = FALSE
+      }
       IC = NULL
       #GAPIT.Version=GAPIT.0000()
       print("--------------------Processing traits----------------------------------")
@@ -599,7 +604,7 @@
         traitname=colnames(Y)[trait]
         ### Statistical distributions of phenotype
         ### Correlation between phenotype and principal components
-        print(paste("Processing trait: ",traitname,sep=""))
+        print(paste("Processing trait: ", traitname, sep=""))
         if( !is.null( Para$memo ) ) {
           traitname = paste(Para$memo, ".", traitname, sep="")
         }

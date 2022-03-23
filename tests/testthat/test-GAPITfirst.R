@@ -82,8 +82,8 @@ test_that("GAPIT function works, GLM model", {
   myGAPIT <- GAPIT( Y = myPhenotypes,
                     G = myGenotypes,
                     PCA.total = 3,
-                    file.output = TRUE,
-#                    file.output = FALSE,
+#                    file.output = TRUE,
+                    file.output = FALSE,
                     maxLoop = 1,
                     model = "GLM"
   )

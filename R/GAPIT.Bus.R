@@ -12,35 +12,36 @@ function(Y=NULL,CV=NULL,Z=NULL,GT=NULL,KI=NULL,GK=NULL,GD=NULL,GM=NULL,
 # This function is used to run multiple method, Thanks MLMM FarmCPU Blink to share program and code.
 #Authors: Zhiwu Zhang
 #Writen by Jiabo Wang
-#Last update: Novenber 3, 2016
+#Last update: November 3, 2016
 ##############################################################################################
-GR=NULL
-seqQTN=NULL
+  GR=NULL
+  seqQTN=NULL
 
-#print(head(CV))
-if(method=="GLM"){
-#print("---------------screening by GLM----------------------------------")
+  #print(head(CV))
+  if(method=="GLM"){
+    #print("---------------screening by GLM----------------------------------")
 
-  myGAPIT <- GAPIT(
-  Y=Y,			
-  CV=CV,
-  Z=Z,
-  KI=KI,
-  GD=GD,
-  GM=GM,
-  group.from=0,			
-  group.to=0,
-  QC=FALSE,
-  GTindex=GTindex,
-  file.output=F				
-  )
-  GWAS=myGAPIT$GWAS 
-  GPS=myGAPIT$GPS 
-  REMLs=myGAPIT$REMLs  
-  delta=myGAPIT$ve/myGAPIT$va
-  vg=myGAPIT$vg
-  ve=myGAPIT$ve
-}
+    myGAPIT <- GAPIT(
+      Y=Y,			
+      CV=CV,
+      Z=Z,
+      KI=KI,
+      GD=GD,
+      GM=GM,
+      group.from=0,			
+      group.to=0,
+      QC=FALSE,
+      GTindex=GTindex,
+      file.output=F				
+    )
+  
+    GWAS=myGAPIT$GWAS 
+    GPS=myGAPIT$GPS 
+    REMLs=myGAPIT$REMLs  
+    delta=myGAPIT$ve/myGAPIT$va
+    vg=myGAPIT$vg
+    ve=myGAPIT$ve
+  }
 
 #Performing first screening with MLM
 if(method=="MLM"){
